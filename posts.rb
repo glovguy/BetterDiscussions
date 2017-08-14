@@ -11,7 +11,7 @@ class Post
     Hash[*user_and_similarity_pairs.flatten]
   end
 
-  def card_recommendations_hash(user, *cards)
+  def recommendations_hash(user, *cards)
     cards = @cards unless cards != []
     user_sims = similar_users(user)
     other_users = @users.reject{|u| u==user}
@@ -28,25 +28,35 @@ class Post
     Hash[*pairs.flatten]
   end
 
-  def recommendation_for_card(user, card)
-    rec = card_recommendations_hash(user, card)[card]
+  def recommendation_value_for_card(user, card)
+    rec = recommendations_hash(user)[card]
     rec.value
   end
 
   def likelihood_of_pos_vote(user, card)
-    value = (card_recommendations_hash(user, card)[card] + 1) / 2.0
-    puts value
-    value
+    recommendations_hash(user)[card].pos_vote_chance
   end
 end
 
 class Recommendation
+  PRIOR_NUMER = 0.0
+  PRIOR_DENOM = 1.0
+
   def initialize(score_sum, sim_sum)
     @score_sum = score_sum
     @sim_sum = sim_sum
   end
 
-  def value
-    @sim_sum != 0 ? @score_sum/@sim_sum : 0.0
+  def value(with_prior=false)
+    return 0 unless @sim_sum != 0
+    numer = @score_sum + (with_prior ? PRIOR_NUMER : 0.0)
+    denom = @sim_sum + (with_prior ? PRIOR_DENOM : 0.0)
+    numer / denom
+  end
+
+  def pos_vote_chance
+    numer = (value(true)) + 1
+    denom = 2.0
+    numer / denom
   end
 end

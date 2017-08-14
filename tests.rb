@@ -51,38 +51,51 @@ class PostTests < Minitest::Test
     assert(sally_top_matches[PHIL] > sally_top_matches[JAN])
   end
 
-  def test_card_recommendations_hash
-    card_recs = POST1.card_recommendations_hash(SUE)
+  def test_recommendations_hash
+    card_recs = POST1.recommendations_hash(SUE)
     assert(!card_recs.nil?)
     assert(card_recs[CARD6].value > 0)
     assert(card_recs[CARD7].value < 0)
   end
 
   def test_card_recommendation_range
-    POST1.card_recommendations_hash(SUE).values.each do |rec|
+    POST1.recommendations_hash(SUE).values.each do |rec|
       assert(rec.value >= -1)
       assert(rec.value <= 1)
     end
   end
 
   def test_card_without_votes_returns_zero
-    assert(POST1.card_recommendations_hash(ROBERT)[CARD_NO_ONE_HAS_VOTED_ON].value == 0)
+    assert(POST1.recommendations_hash(ROBERT)[CARD_NO_ONE_HAS_VOTED_ON].value == 0)
   end
 
   def test_card_user_has_voted_on_is_given_recommendation
-    assert_equal(POST1.card_recommendations_hash(ROBERT)[CARD1].value, 0.057190958417936644)
+    assert_equal(POST1.recommendations_hash(ROBERT)[CARD1].value, 0.057190958417936644)
   end
 
   def test_card_recommendation_for_just_one_card
-    rec = POST1.recommendation_for_card(SUE, CARD8)
+    rec = POST1.recommendation_value_for_card(SUE, CARD8)
     assert_equal(rec, 1)
   end
 
-  # def test_likelihood_of_pos_vote
-  #   likelihoods = POST1.cards.map { |c| POST1.likelihood_of_pos_vote(PHIL, c) }
-  #   likelihoods.each do |l|
-  #     assert(l >= 0)
-  #     assert(l <= 1)
-  #   end
-  # end
+  def test_recommendations
+    rec1 = Recommendation.new(1.0, 1.0)
+    rec2 = Recommendation.new(4.5, 6.0)
+    assert_equal(rec1.value, 1.0)
+    assert_equal(rec2.value, 0.75)
+  end
+
+  def test_recommendation_pos_vote_chance
+    rec1 = Recommendation.new(1, 1)
+    rec2 = Recommendation.new(4.5, 6)
+    assert_equal(rec1.pos_vote_chance, 0.75)
+  end
+
+  def test_likelihood_of_pos_vote
+    likelihoods = POST1.cards.map { |c| POST1.likelihood_of_pos_vote(PHIL, c) }
+    likelihoods.each do |l|
+      assert(l >= 0)
+      assert(l <= 1)
+    end
+  end
 end
