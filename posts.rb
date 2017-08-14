@@ -29,12 +29,23 @@ class Post
   end
 
   def recommendation_value_for_card(user, card)
-    rec = recommendations_hash(user)[card]
-    rec.value
+    recommendations_hash(user)[card].value
   end
 
   def likelihood_of_pos_vote(user, card)
     recommendations_hash(user)[card].pos_vote_chance
+  end
+
+  def card_entropy(card)
+    users_who_voted = @users.select do |u|
+      u.vote_on(card) != 0
+    end
+    entropy = users_who_voted.inject(0) do |sum, u|
+      card_prob = likelihood_of_pos_vote(u, card)
+      -card_prob * Math.log2(card_prob) + sum
+    end
+    puts 'entropy: ' + entropy.to_s
+    entropy
   end
 end
 

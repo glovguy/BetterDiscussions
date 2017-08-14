@@ -1,7 +1,7 @@
 
 class Vote
-  attr_reader :score
   attr_reader :card
+  attr_reader :score
 
   def initialize(card, score)
     @card = card

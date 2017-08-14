@@ -98,4 +98,11 @@ class PostTests < Minitest::Test
       assert(l <= 1)
     end
   end
+
+  def test_card_entropy
+    assert(POST1.card_entropy(CARD1) > 0)
+    entropies = POST1.cards.map do |c|
+      { c => POST1.card_entropy(c) }
+    end
+  end
 end
