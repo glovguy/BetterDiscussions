@@ -1,9 +1,9 @@
 require 'minitest/autorun'
-require_relative './recommendation.rb'
+require_relative './cards.rb'
 require_relative './posts.rb'
 require_relative './test_data.rb'
 
-class RecommendationTest < Minitest::Test
+class CardTests < Minitest::Test
 
   def test_user_can_have_vote
     card1 = Card.new(Object.new, Object.new)
@@ -37,6 +37,9 @@ class RecommendationTest < Minitest::Test
   def test_distance_with_self
     assert_equal(SUE.user_distance(SUE), 1.0)
   end
+end
+
+class PostTests < Minitest::Test
 
   def test_similar_users
     assert(!POST1.similar_users(SALLY).nil?)
