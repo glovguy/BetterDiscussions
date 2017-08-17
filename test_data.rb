@@ -1,16 +1,16 @@
-POSTER = User.new('poster')
+# POSTER =  User.new('poster')
 
-CARD1 = Card.new(POSTER, 'card1')
-CARD2 = Card.new(POSTER, 'card2')
-CARD3 = Card.new(POSTER, 'card3')
-CARD4 = Card.new(POSTER, 'card4')
-CARD5 = Card.new(POSTER, 'card5')
-CARD6 = Card.new(POSTER, 'card6')
-CARD7 = Card.new(POSTER, 'card7')
-CARD8 = Card.new(POSTER, 'card8')
-CARD9 = Card.new(POSTER, 'card9')
-CARD10 = Card.new(POSTER, 'card10')
-CARD_NO_ONE_HAS_VOTED_ON = Card.new(POSTER, 'no one has voted on this one')
+CARD1 = Card.new('card1')
+CARD2 = Card.new('card2')
+CARD3 = Card.new('card3')
+CARD4 = Card.new('card4')
+CARD5 = Card.new('card5')
+CARD6 = Card.new('card6')
+CARD7 = Card.new('card7')
+CARD8 = Card.new('card8')
+CARD9 = Card.new('card9')
+CARD10 = Card.new('card10')
+CARD_NO_ONE_HAS_VOTED_ON = Card.new('no one has voted on this one')
 
 
 ROBERT = User.new('robert',
@@ -62,9 +62,9 @@ SUE = User.new('sue',
   Vote.new(CARD10, 1)
   )
 
-POST1 = Post.new(
+CONVO1 = Conversation.new(
   [ROBERT, JAN, PHIL, SALLY, SUE],
   [CARD1, CARD2, CARD3, CARD4, CARD5,
     CARD6, CARD7, CARD8, CARD9, CARD10,
-  CARD_NO_ONE_HAS_VOTED_ON]
+    CARD_NO_ONE_HAS_VOTED_ON]
   )
