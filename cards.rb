@@ -13,7 +13,7 @@ class Vote
   end
 
   def hash
-    @body.hash
+    [@card, @score].hash
   end
 end
 
@@ -94,14 +94,14 @@ class Recommendation
     @sim_sum = sim_sum
   end
 
-  def weighted_prediction
-    return 0 unless @sim_sum != 0
-    @score_sum / @sim_sum
-  end
-
   def +(other)
     return self unless other.class == Recommendation
     Recommendation.new(@score_sum + other.score_sum, @sim_sum + other.sim_sum)
+  end
+
+  def weighted_prediction
+    return 0 unless @sim_sum != 0
+    @score_sum / @sim_sum
   end
 
   def pos_vote_chance

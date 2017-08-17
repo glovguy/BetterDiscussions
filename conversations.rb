@@ -25,7 +25,7 @@ class Conversation
       u.vote_on(card).score != 0
     end
     chi_sqr_stat = users_who_voted.inject(0) do |sum, u|
-      pred = recommendation_value_for_card(u, card)
+      pred = recommendation_for(u, card).weighted_prediction
       numer = (u.vote_on(card).score - pred) ** 2
       denom = pred
     end

@@ -4,6 +4,29 @@ require_relative './conversations.rb'
 require_relative './test_data.rb'
 
 class CardTests < Minitest::Test
+  def test_card_equality
+    assert(Card.new('body').eql? Card.new('body'))
+  end
+
+  def test_card_hash_equality
+    assert_equal(Card.new('body').hash, Card.new('body').hash)
+  end
+
+  def test_user_equality
+    assert(User.new('bane').eql? User.new('bane'))
+  end
+
+  def test_user_hash_equality
+    assert_equal(User.new('bane').hash, User.new('bane').hash)
+  end
+
+  def test_vote_equality
+    assert(Vote.new(CARD1,-1).eql? Vote.new(CARD1, -1))
+  end
+
+  def test_vote_hash_equality
+    assert_equal(Vote.new(CARD1, -1).hash, Vote.new(CARD1, -1).hash)
+  end
 
   def test_user_can_have_vote
     card1 = Card.new(Object.new)
