@@ -77,6 +77,36 @@ class CardTests < Minitest::Test
       Recommendation.new(3, 6).weighted_prediction
       )
   end
+
+  def test_recommendations
+    rec1 = Recommendation.new(1.0, 1.0)
+    rec2 = Recommendation.new(4.5, 6.0)
+    assert_equal(rec1.weighted_prediction, 1.0)
+    assert_equal(rec2.weighted_prediction, 0.75)
+  end
+
+  def test_recommendation_pos_vote_chance
+    rec1 = Recommendation.new(0, 1)
+    rec2 = Recommendation.new(4.5, 6)
+    assert_equal(rec1.pos_vote_chance, 0.5)
+  end
+
+  def test_likelihood_of_pos_vote_range
+    likelihoods = CONVO1.cards.map { |c| CONVO1.likelihood_of_pos_vote(PHIL, c) }
+    likelihoods.each do |l|
+      assert(l >= 0)
+      assert(l <= 1)
+    end
+  end
+
+  def test_pos_vote_and_neg_vote_eql_one
+    likelihoods = CONVO1.cards.map do |c|
+      [CONVO1.likelihood_of_pos_vote(PHIL, c), CONVO1.likelihood_of_neg_vote(PHIL, c)]
+    end.flatten
+    likelihoods.each_slice(2) do |l|
+      assert_equal(l[0] + l[1], 1)
+    end
+  end
 end
 
 class ConversationTests < Minitest::Test
@@ -103,34 +133,19 @@ class ConversationTests < Minitest::Test
     assert_equal(CONVO1.recommendation_for(ROBERT, CARD1).weighted_prediction, 0.057190958417936644)
   end
 
-  def test_recommendations
-    rec1 = Recommendation.new(1.0, 1.0)
-    rec2 = Recommendation.new(4.5, 6.0)
-    assert_equal(rec1.weighted_prediction, 1.0)
-    assert_equal(rec2.weighted_prediction, 0.75)
-  end
-
-  def test_recommendation_pos_vote_chance
-    rec1 = Recommendation.new(0, 1)
-    rec2 = Recommendation.new(4.5, 6)
-    assert_equal(rec1.pos_vote_chance, 0.5)
-  end
-
-  def test_likelihood_of_pos_vote
-    likelihoods = CONVO1.cards.map { |c| CONVO1.likelihood_of_pos_vote(PHIL, c) }
+  def test_chi_squared_likelihood
+    cards = [CARD1, CARD2, CARD3, CARD4, CARD5,
+      CARD6, CARD7, CARD8, CARD9]
+    likelihoods = cards.map { |c| CONVO1.chi_squared_likelihood(c) }
     likelihoods.each do |l|
       assert(l >= 0)
       assert(l <= 1)
     end
   end
 
-  # def test_chi_squared_likelihood
-  #   likelihoods = CONVO1.cards.map { |c| CONVO1.chi_squared_likelihood(c) }
-  #   likelihoods.each do |l|
-  #     assert(l >= 0)
-  #     assert(l <= 1)
-  #   end
-  # end
+  def test_chi_squared_likelihood_for_card_with_one_vote_returns_nil
+    CONVO1.chi_squared_likelihood(CARD10)
+  end
 
   # def test_card_entropy
   #   assert(CONVO1.card_entropy(CARD1) > 0)

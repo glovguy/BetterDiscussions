@@ -20,30 +20,31 @@ class Conversation
     (PRIOR + recommendation_for(user, card)).pos_vote_chance
   end
 
+  def likelihood_of_neg_vote(user, card)
+    1 - likelihood_of_pos_vote(user, card)
+  end
+
   def chi_squared_likelihood(card)
-    users_who_voted = @users.select do |u|
-      u.vote_on(card).score != 0
+    users_who_voted = @users.reject do |u|
+      u.vote_on(card).nil?
     end
+    return nil unless users_who_voted.length > 1
     chi_sqr_stat = users_who_voted.inject(0) do |sum, u|
-      pred = recommendation_for(u, card).weighted_prediction
+      pred = likelihood_of_pos_vote(u, card)
       numer = (u.vote_on(card).score - pred) ** 2
       denom = pred
+      numer / denom
     end
-    likelihood = Statistics2.chi2dist(1, chi_sqr_stat)
-    # puts 'Likelihood: ' + likelihood.to_s + " for:\t\t " + card.body
-    likelihood
+    Statistics2.chi2dist(1, chi_sqr_stat)
   end
 
   def card_entropy(card)
     users_who_voted = @users.select do |u|
       u.vote_on(card) != 0
     end
-    entropy = users_who_voted.inject(0) do |sum, u|
+    users_who_voted.inject(0) do |sum, u|
       card_prob = likelihood_of_pos_vote(u, card)
       -card_prob * Math.log2(card_prob) + sum
     end
-    # puts 'card: ' + card.body
-    # puts 'entropy: ' + entropy.to_s
-    entropy
   end
 end

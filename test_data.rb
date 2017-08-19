@@ -1,5 +1,3 @@
-# POSTER =  User.new('poster')
-
 CARD1 = Card.new('card1')
 CARD2 = Card.new('card2')
 CARD3 = Card.new('card3')
@@ -11,7 +9,6 @@ CARD8 = Card.new('card8')
 CARD9 = Card.new('card9')
 CARD10 = Card.new('card10')
 CARD_NO_ONE_HAS_VOTED_ON = Card.new('no one has voted on this one')
-
 
 ROBERT = User.new('robert',
     Vote.new(CARD1, -1),

@@ -109,6 +109,10 @@ class Recommendation
     denom = 2.0
     numer / denom
   end
+
+  def neg_vote_chance
+    1 - pos_vote_chance
+  end
 end
 
 def pearson_score(u1, u2)
