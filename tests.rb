@@ -65,7 +65,7 @@ class CardTests < Minitest::Test
 
   def test_vote_converts_score_to_integer
     vote1 = Vote.new(CARD1, '-1')
-    assert_equal(vote1.score.class, Integer)
+    refute_equal(vote1.score.class, String)
   end
 
   def test_recommendation_adding
