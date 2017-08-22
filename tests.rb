@@ -110,7 +110,6 @@ class CardTests < Minitest::Test
 end
 
 class ConversationTests < Minitest::Test
-
   def test_recommendation_for
     assert(CONVO1.recommendation_for(SUE, CARD5).weighted_prediction < 0)
     assert(CONVO1.recommendation_for(SUE, CARD6).weighted_prediction > 0)
