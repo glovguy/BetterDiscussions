@@ -1,7 +1,7 @@
 require 'minitest/autorun'
 require_relative './cards.rb'
 require_relative './conversations.rb'
-require_relative './test_data.rb'
+require_relative './test_setup.rb'
 
 class CardTests < Minitest::Test
   def test_card_equality
