@@ -153,3 +153,12 @@ class ConversationTests < Minitest::Test
   #   end
   # end
 end
+
+class ConversationTests < Minitest::Test
+  def test_vote_data_adaptor
+    assert(CONVO1.recommendation_for(SUE, CARD5).weighted_prediction < 0)
+    assert(CONVO1.recommendation_for(SUE, CARD6).weighted_prediction > 0)
+    assert(CONVO1.recommendation_for(SUE, CARD7).weighted_prediction < 0)
+    assert_equal(CONVO1.recommendation_for(SUE, CARD8).weighted_prediction, 1)
+  end
+end
