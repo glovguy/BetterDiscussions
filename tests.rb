@@ -63,6 +63,11 @@ class CardTests < Minitest::Test
     assert_equal(SUE.user_distance(SUE), 1.0)
   end
 
+  def test_distance_excluding
+    assert_equal(ALICE.user_distance(BOB), 0.3333333333333333)
+    assert_equal(ALICE.user_distance(BOB, exclude=[CARD2]), 1.0)
+  end
+
   def test_vote_converts_score_to_integer
     vote1 = Vote.new(CARD1, '-1')
     refute_equal(vote1.score.class, String)
@@ -154,7 +159,7 @@ class ConversationTests < Minitest::Test
   # end
 end
 
-class ConversationTests < Minitest::Test
+class VoteDataAdaptorTests < Minitest::Test
   def test_vote_data_adaptor
     assert(CONVO1.recommendation_for(SUE, CARD5).weighted_prediction < 0)
     assert(CONVO1.recommendation_for(SUE, CARD6).weighted_prediction > 0)

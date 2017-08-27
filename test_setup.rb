@@ -59,6 +59,17 @@ SUE = User.new('sue',
   Vote.new(CARD10, 1)
   )
 
+ALICE = User.new('alice',
+  Vote.new(CARD1, 1),
+  Vote.new(CARD2, -1),
+  Vote.new(CARD3, 1)
+  )
+
+BOB = User.new('bob',
+  Vote.new(CARD1, 1),
+  Vote.new(CARD2, 1)
+  )
+
 CONVO1 = Conversation.new(
   [ROBERT, JAN, PHIL, SALLY, SUE],
   [CARD1, CARD2, CARD3, CARD4, CARD5,

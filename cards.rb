@@ -75,8 +75,9 @@ class User
     self.cards_voted & other.cards_voted
   end
 
-  def user_distance(other)
-    total = self.common_cards_voted(other).inject(0) do |sum, card|
+  def user_distance(other, exclude=[])
+    common_cards = self.common_cards_voted(other) - exclude
+    total = common_cards.inject(0) do |sum, card|
       ( self.vote_on(card).score - other.vote_on(card).score ) ** 2 + sum
     end
     final = 1.0/(Math.sqrt(total)+1)
