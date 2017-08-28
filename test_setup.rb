@@ -70,6 +70,9 @@ BOB = User.new('bob',
   Vote.new(CARD2, 1)
   )
 
+USER_WITH_NO_VOTES = User.new('user_with_no_votes'
+  )
+
 CONVO1 = Conversation.new(
   [ROBERT, JAN, PHIL, SALLY, SUE],
   [CARD1, CARD2, CARD3, CARD4, CARD5,

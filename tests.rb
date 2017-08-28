@@ -63,9 +63,24 @@ class CardTests < Minitest::Test
     assert_equal(SUE.user_distance(SUE), 1.0)
   end
 
+  def test_distance_totally_unrelated_user
+    assert_equal(ALICE.user_distance(USER_WITH_NO_VOTES), 0.0)
+  end
+
   def test_distance_excluding
     assert_equal(ALICE.user_distance(BOB), 0.3333333333333333)
     assert_equal(ALICE.user_distance(BOB, exclude=[CARD2]), 1.0)
+    assert_equal(ALICE.user_distance(BOB, exclude=[CARD1,CARD2]), 0.0)
+  end
+
+  def test_pearson_score_range
+    CONVO1.users.each do |u1|
+      CONVO1.users.each do |u2|
+        dist = u1.pearson_score(u2)
+        assert(dist >= -1.0)
+        assert(dist <= 1.0)
+      end
+    end
   end
 
   def test_vote_converts_score_to_integer
@@ -88,6 +103,10 @@ class CardTests < Minitest::Test
     rec2 = Recommendation.new(4.5, 6.0)
     assert_equal(rec1.weighted_prediction, 1.0)
     assert_equal(rec2.weighted_prediction, 0.75)
+  end
+
+  def test_recommendation_for_totally_unrelated_user
+    assert_nil(ALICE.recommendation_for(USER_WITH_NO_VOTES, CARD1))
   end
 
   def test_recommendation_pos_vote_chance

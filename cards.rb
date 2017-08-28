@@ -67,6 +67,7 @@ class User
   end
 
   def recommendation_for(user, card)
+    return nil if self.common_cards_voted(user) == []
     sim = similarity_with(user)
     Recommendation.new(vote_on(card).score * sim, sim)
   end
@@ -77,10 +78,29 @@ class User
 
   def user_distance(other, exclude=[])
     common_cards = self.common_cards_voted(other) - exclude
+    return 0 if common_cards == []
     total = common_cards.inject(0) do |sum, card|
       ( self.vote_on(card).score - other.vote_on(card).score ) ** 2 + sum
     end
     final = 1.0/(Math.sqrt(total)+1)
+  end
+
+  def pearson_score(other)
+    common_cards = self.common_cards_voted(other)
+    return 0 if common_cards == []
+
+    sum1 = common_cards.inject(0) { |sum, card| sum + self.vote_on(card).score }
+    sum2 = common_cards.inject(0) { |sum, card| sum + other.vote_on(card).score }
+
+    sumSq1 = common_cards.inject(0) { |sum, card| sum + (self.vote_on(card).score) ** 2 }
+    sumSq2 = common_cards.inject(0) { |sum, card| sum + (other.vote_on(card).score) ** 2 }
+
+    pSum = common_cards.inject(0) { |sum, card| sum + (self.vote_on(card).score * other.vote_on(card).score) }
+
+    numer = pSum - (sum1*sum2/common_cards.length)
+    denom = Math.sqrt((sumSq1 - sum1**2 / common_cards.length) * (sumSq2 - sum2**2 / common_cards.length))
+    return 0 if denom == 0
+    numer / denom
   end
 end
 
@@ -115,21 +135,3 @@ class Recommendation
     1 - pos_vote_chance
   end
 end
-
-def pearson_score(u1, u2)
-  all_keys = u1.keys & u2.keys
-  u1 = u1.select { |i, o| all_keys.include? i }
-  u2 = u2.select { |i, o| all_keys.include? i }
-
-  sum1 = u1.reduce(:+)
-  sum2 = u2.reduce(:+)
-
-  sumSq1 = u1.inject(0) { |sum, n| n**2 + sum }
-  sumSq2 = u2.inject(0) { |sum, n| n**2 + sum }
-
-  pSum = (u1+u2)
-
-  num = 0
-end
-
-
