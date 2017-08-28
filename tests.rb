@@ -37,40 +37,55 @@ class CardTests < Minitest::Test
     assert(user1.cards_voted.include? card1)
   end
 
+  def test_user_similarity_equality
+    assert_equal(
+      SUE.similarity_with(ROBERT),
+      ROBERT.similarity_with(SUE)
+      )
+  end
+
+  def test_user_similarity_excluding
+    assert(ALICE.similarity_with(BOB) <
+      ALICE.similarity_with(BOB, exclude=[CARD2])
+      )
+  end
+
   def test_user_distance_equality
     assert_equal(
-      SUE.user_distance(ROBERT),
-      ROBERT.user_distance(SUE)
+      USER_DISTANCE_SIMILARITY.call(SUE, ROBERT),
+      USER_DISTANCE_SIMILARITY.call(ROBERT, SUE)
       )
   end
 
   def test_user_distance_greater_than
     assert(
-      SUE.user_distance(ROBERT) >
-        JAN.user_distance(ROBERT)
+      USER_DISTANCE_SIMILARITY.call(SUE, ROBERT) >
+        USER_DISTANCE_SIMILARITY.call(JAN, ROBERT)
       )
   end
 
   def test_distance_range
-    CONVO1.users.each do |u|
-      dist = u.user_distance(ROBERT)
-      assert(dist >= 0.0)
-      assert(dist <= 1.0)
+    CONVO1.users.each do |user1|
+      CONVO1.users.each do |user2|
+        dist = USER_DISTANCE_SIMILARITY.call(user1, user2)
+        assert(dist >= 0.0)
+        assert(dist <= 1.0)
+      end
     end
   end
 
   def test_distance_with_self
-    assert_equal(SUE.user_distance(SUE), 1.0)
+    assert_equal(USER_DISTANCE_SIMILARITY.call(SUE, SUE), 1.0)
   end
 
   def test_distance_totally_unrelated_user
-    assert_equal(ALICE.user_distance(USER_WITH_NO_VOTES), 0.0)
+    assert_equal(USER_DISTANCE_SIMILARITY.call(ALICE, USER_WITH_NO_VOTES), 0.0)
   end
 
   def test_distance_excluding
-    assert_equal(ALICE.user_distance(BOB), 0.3333333333333333)
-    assert_equal(ALICE.user_distance(BOB, exclude=[CARD2]), 1.0)
-    assert_equal(ALICE.user_distance(BOB, exclude=[CARD1,CARD2]), 0.0)
+    assert_equal(USER_DISTANCE_SIMILARITY.call(ALICE, BOB), 0.3333333333333333)
+    assert_equal(USER_DISTANCE_SIMILARITY.call(ALICE, BOB, exclude=[CARD2]), 1.0)
+    assert_equal(USER_DISTANCE_SIMILARITY.call(ALICE, BOB, exclude=[CARD1,CARD2]), 0.0)
   end
 
   def test_pearson_score_range

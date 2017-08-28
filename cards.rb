@@ -62,8 +62,8 @@ class User
     @votes.find { |v| v.card == card }
   end
 
-  def similarity_with(other)
-    user_distance(other)
+  def similarity_with(other, exclude=[])
+    USER_DISTANCE_SIMILARITY.call(self, other, exclude)
   end
 
   def recommendation_for(user, card)
@@ -74,15 +74,6 @@ class User
 
   def common_cards_voted(other)
     self.cards_voted & other.cards_voted
-  end
-
-  def user_distance(other, exclude=[])
-    common_cards = self.common_cards_voted(other) - exclude
-    return 0 if common_cards == []
-    total = common_cards.inject(0) do |sum, card|
-      ( self.vote_on(card).score - other.vote_on(card).score ) ** 2 + sum
-    end
-    final = 1.0/(Math.sqrt(total)+1)
   end
 
   def pearson_score(other)
@@ -134,4 +125,13 @@ class Recommendation
   def neg_vote_chance
     1 - pos_vote_chance
   end
+end
+
+USER_DISTANCE_SIMILARITY = lambda do |user1, user2, exclude=[]|
+  common_cards = user1.common_cards_voted(user2) - exclude
+  return 0 if common_cards == []
+  total = common_cards.inject(0) do |sum, card|
+    ( user1.vote_on(card).score - user2.vote_on(card).score ) ** 2 + sum
+  end
+  final = 1.0/(Math.sqrt(total)+1)
 end
