@@ -89,9 +89,9 @@ class CardTests < Minitest::Test
   end
 
   def test_pearson_score_range
-    CONVO1.users.each do |u1|
-      CONVO1.users.each do |u2|
-        dist = u1.pearson_score(u2)
+    CONVO1.users.each do |user1|
+      CONVO1.users.each do |user2|
+        dist = PEARSON_SCORE.call(user1, user2)
         assert(dist >= -1.0)
         assert(dist <= 1.0)
       end

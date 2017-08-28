@@ -75,24 +75,6 @@ class User
   def common_cards_voted(other)
     self.cards_voted & other.cards_voted
   end
-
-  def pearson_score(other)
-    common_cards = self.common_cards_voted(other)
-    return 0 if common_cards == []
-
-    sum1 = common_cards.inject(0) { |sum, card| sum + self.vote_on(card).score }
-    sum2 = common_cards.inject(0) { |sum, card| sum + other.vote_on(card).score }
-
-    sumSq1 = common_cards.inject(0) { |sum, card| sum + (self.vote_on(card).score) ** 2 }
-    sumSq2 = common_cards.inject(0) { |sum, card| sum + (other.vote_on(card).score) ** 2 }
-
-    pSum = common_cards.inject(0) { |sum, card| sum + (self.vote_on(card).score * other.vote_on(card).score) }
-
-    numer = pSum - (sum1*sum2/common_cards.length)
-    denom = Math.sqrt((sumSq1 - sum1**2 / common_cards.length) * (sumSq2 - sum2**2 / common_cards.length))
-    return 0 if denom == 0
-    numer / denom
-  end
 end
 
 class Recommendation
@@ -134,4 +116,22 @@ USER_DISTANCE_SIMILARITY = lambda do |user1, user2, exclude=[]|
     ( user1.vote_on(card).score - user2.vote_on(card).score ) ** 2 + sum
   end
   final = 1.0/(Math.sqrt(total)+1)
+end
+
+PEARSON_SCORE = lambda do |user1, user2|
+  common_cards = user1.common_cards_voted(user2)
+  return 0 if common_cards == []
+
+  sum1 = common_cards.inject(0) { |sum, card| sum + user1.vote_on(card).score }
+  sum2 = common_cards.inject(0) { |sum, card| sum + user2.vote_on(card).score }
+
+  sumSq1 = common_cards.inject(0) { |sum, card| sum + (user1.vote_on(card).score) ** 2 }
+  sumSq2 = common_cards.inject(0) { |sum, card| sum + (user2.vote_on(card).score) ** 2 }
+
+  pSum = common_cards.inject(0) { |sum, card| sum + (user1.vote_on(card).score * user2.vote_on(card).score) }
+
+  numer = pSum - (sum1*sum2/common_cards.length)
+  denom = Math.sqrt((sumSq1 - sum1**2 / common_cards.length) * (sumSq2 - sum2**2 / common_cards.length))
+  return 0 if denom == 0
+  numer / denom
 end
