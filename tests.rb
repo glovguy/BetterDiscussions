@@ -215,5 +215,6 @@ class VoteDataAdaptorTests < Minitest::Test
     assert(dataAdapt.cards)
     assert(dataAdapt.users)
     assert(dataAdapt.votes)
+    assert(dataAdapt.convos)
   end
 end

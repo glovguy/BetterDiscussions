@@ -8,6 +8,7 @@ class VoteDataAdaptor
   attr_reader :cards
   attr_reader :users
   attr_reader :votes
+  attr_reader :convos
 
   def initialize(filepath, verbose=true)
     @filesize = IO.readlines(filepath).size
@@ -16,6 +17,7 @@ class VoteDataAdaptor
     load_users
     load_cards
     load_votes
+    load_convos
   end
 
   def confirm_no_duplicate_cards
@@ -25,16 +27,6 @@ class VoteDataAdaptor
     cards_with_more_than_one_vote = cards_with_more_than_one_vote.reject { |c| c.nil? }
     puts " Number of cards with more than one vote: #{cards_with_more_than_one_vote.length}"
     puts ' No cards with more than one vote' unless not cards_with_more_than_one_vote.empty?
-  end
-
-  def load_convos
-    @convos = []
-    @cards.each do |card|
-      users_on_card = @users.select do |user|
-        not user.vote_on(card).nil?
-      end
-      @convos << Conversation.new(users_on_card, card)
-    end
   end
 
   def calculate_convo_scores(batch_size=5000)
@@ -132,5 +124,15 @@ class VoteDataAdaptor
         bar3.increment! if @verbose
       end
       puts "Votes loaded. There are #{@votes.length} votes." if @verbose
+    end
+
+    def load_convos
+      @convos = []
+      @cards.each do |card|
+        users_on_card = @users.select do |user|
+          not user.vote_on(card).nil?
+        end
+        @convos << Conversation.new(users_on_card, card)
+      end
     end
 end
