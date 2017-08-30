@@ -2,6 +2,7 @@ require 'minitest/autorun'
 require_relative './cards.rb'
 require_relative './conversations.rb'
 require_relative './test_setup.rb'
+require_relative './vote_data_adapter.rb'
 
 class CardTests < Minitest::Test
   def test_card_equality
@@ -208,10 +209,11 @@ class ConversationTests < Minitest::Test
 end
 
 class VoteDataAdaptorTests < Minitest::Test
-  def test_vote_data_adaptor
-    assert(CONVO1.recommendation_for(SUE, CARD5).weighted_prediction < 0)
-    assert(CONVO1.recommendation_for(SUE, CARD6).weighted_prediction > 0)
-    assert(CONVO1.recommendation_for(SUE, CARD7).weighted_prediction < 0)
-    assert_equal(CONVO1.recommendation_for(SUE, CARD8).weighted_prediction, 1)
+  def test_vote_data_adaptor_initialize
+    dataAdapt = VoteDataAdaptor.new('testData.csv', verbose=false)
+    assert(dataAdapt)
+    assert(dataAdapt.cards)
+    assert(dataAdapt.users)
+    assert(dataAdapt.votes)
   end
 end

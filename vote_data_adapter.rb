@@ -1,71 +1,21 @@
 require 'csv'
 require_relative './cards.rb'
 require_relative './conversations.rb'
-require_relative './test_data.rb'
 require 'progress_bar'
 
 
 class VoteDataAdaptor
-  filesize = IO.readlines(filepath).size
+  attr_reader :cards
+  attr_reader :users
+  attr_reader :votes
 
   def initialize(filepath, verbose=true)
+    @filesize = IO.readlines(filepath).size
     @verbose = verbose
-    @row_count = rows.length
-    load_csv_rows
+    load_csv_rows(filepath)
     load_users
     load_cards
-  end
-
-  def load_csv_rows
-    puts 'Loading file into memory...' if @verbose
-    bar0 = ProgressBar.new(filesize) if @verbose
-    rows = []
-    CSV.foreach(filepath) do |row|
-      rows << row
-      bar0.increment! if @verbose
-    end
-    puts 'File in memory.' if @verbose
-  end
-
-  def load_users
-    users = []
-    bar1 = ProgressBar.new(@row_count) if @verbose
-    rows.each do |row|
-      username, post_id, vote_value = row
-      users << User.new(username)
-      bar1.increment! if @verbose
-    end
-    puts 'Users loaded. Removing duplicates...' if @verbose
-    @users = users.uniq
-    puts "There are #{@users.length} users." if @verbose
-  end
-
-  def load_cards
-    cards = []
-    bar2 = ProgressBar.new(@row_count) if @verbose
-    rows.each do |row|
-      username, post_id, vote_value = row
-      cards << Card.new(post_id)
-      bar2.increment! if @verbose
-    end
-    puts 'Cards loaded. Removing duplicates...' if @verbose
-    @cards = cards.uniq
-    puts "There are #{@cards.length} cards." if @verbose
-  end
-
-  def load_votes
-    bar3 = ProgressBar.new(@row_count) if @verbose
-    @votes = []
-    rows.each do |row|
-      username, post_id, vote_value = row
-      user = @users.select { |u| u.username == username }.first
-      card = @cards.select { |c| c.body == post_id }.first
-      vote = Vote.new(card, vote_value)
-      user.add_vote(vote)
-      @votes << vote
-      bar3.increment! if @verbose
-    end
-    puts "Votes loaded. There are #{@votes.length} votes." if @verbose
+    load_votes
   end
 
   def confirm_no_duplicate_cards
@@ -128,4 +78,59 @@ class VoteDataAdaptor
       data.each { |s| csv << s }
     end
   end
+
+  private
+
+    def load_csv_rows(filepath)
+      puts 'Loading file into memory...' if @verbose
+      bar0 = ProgressBar.new(@filesize) if @verbose
+      @rows = []
+      CSV.foreach(filepath) do |row|
+        @rows << row
+        bar0.increment! if @verbose
+      end
+      @row_count = @rows.length
+      puts 'File in memory.' if @verbose
+    end
+
+    def load_users
+      users = []
+      bar1 = ProgressBar.new(@row_count) if @verbose
+      @rows.each do |row|
+        username, post_id, vote_value = row
+        users << User.new(username)
+        bar1.increment! if @verbose
+      end
+      puts 'Users loaded. Removing duplicates...' if @verbose
+      @users = users.uniq
+      puts "There are #{@users.length} users." if @verbose
+    end
+
+    def load_cards
+      cards = []
+      bar2 = ProgressBar.new(@row_count) if @verbose
+      @rows.each do |row|
+        username, post_id, vote_value = row
+        cards << Card.new(post_id)
+        bar2.increment! if @verbose
+      end
+      puts 'Cards loaded. Removing duplicates...' if @verbose
+      @cards = cards.uniq
+      puts "There are #{@cards.length} cards." if @verbose
+    end
+
+    def load_votes
+      bar3 = ProgressBar.new(@row_count) if @verbose
+      @votes = []
+      @rows.each do |row|
+        username, post_id, vote_value = row
+        user = @users.select { |u| u.username == username }.first
+        card = @cards.select { |c| c.body == post_id }.first
+        vote = Vote.new(card, vote_value)
+        user.add_vote(vote)
+        @votes << vote
+        bar3.increment! if @verbose
+      end
+      puts "Votes loaded. There are #{@votes.length} votes." if @verbose
+    end
 end
