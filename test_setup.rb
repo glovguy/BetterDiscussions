@@ -60,18 +60,20 @@ SUE = User.new('sue',
   )
 
 ALICE = User.new('alice',
-  Vote.new(CARD1, 1),
+  Vote.new(CARD1, -1),
   Vote.new(CARD2, -1),
-  Vote.new(CARD3, 1)
+  Vote.new(CARD3, -1),
+  Vote.new(CARD4, -1),
   )
 
 BOB = User.new('bob',
   Vote.new(CARD1, 1),
-  Vote.new(CARD2, 1)
+  Vote.new(CARD2, 1),
+  Vote.new(CARD3, -1),
+  Vote.new(CARD4, -1)
   )
 
-USER_WITH_NO_VOTES = User.new('user_with_no_votes'
-  )
+USER_WITH_NO_VOTES = User.new('user_with_no_votes')
 
 CONVO1 = Conversation.new(
   [ROBERT, JAN, PHIL, SALLY, SUE],

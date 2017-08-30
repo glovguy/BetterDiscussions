@@ -82,20 +82,34 @@ class CardTests < Minitest::Test
     assert_equal(USER_DISTANCE_SIMILARITY.call(ALICE, USER_WITH_NO_VOTES), 0.0)
   end
 
-  def test_distance_excluding
-    assert_equal(USER_DISTANCE_SIMILARITY.call(ALICE, BOB), 0.3333333333333333)
-    assert_equal(USER_DISTANCE_SIMILARITY.call(ALICE, BOB, exclude=[CARD2]), 1.0)
-    assert_equal(USER_DISTANCE_SIMILARITY.call(ALICE, BOB, exclude=[CARD1,CARD2]), 0.0)
+  def test_user_distance_excluding
+    assert(USER_DISTANCE_SIMILARITY.call(ALICE, BOB) <
+      USER_DISTANCE_SIMILARITY.call(ALICE, BOB, exclude=[CARD2]))
+    assert_equal(USER_DISTANCE_SIMILARITY.call(ALICE, BOB, exclude=[CARD1,CARD2,CARD3,CARD4]), 0.0)
   end
 
   def test_pearson_score_range
+    non_zero = false
     CONVO1.users.each do |user1|
       CONVO1.users.each do |user2|
-        dist = PEARSON_SCORE.call(user1, user2)
+        dist = PEARSON_SCORE_SIMILARITY.call(user1, user2)
         assert(dist >= -1.0)
         assert(dist <= 1.0)
+        non_zero = true if not dist.zero?
       end
     end
+    assert(non_zero)
+  end
+
+  def test_pearson_score_commutitivity
+    assert_equal(USER_DISTANCE_SIMILARITY.call(PHIL, SUE),
+      USER_DISTANCE_SIMILARITY.call(PHIL, SUE))
+  end
+
+  def test_pearson_score_excluding
+    assert(PEARSON_SCORE_SIMILARITY.call(SALLY, JAN) <
+      PEARSON_SCORE_SIMILARITY.call(SALLY, JAN, exclude=[CARD2,CARD4]))
+    assert_equal(PEARSON_SCORE_SIMILARITY.call(ALICE, BOB, exclude=[CARD1,CARD2,CARD3,CARD4]), 0.0)
   end
 
   def test_vote_converts_score_to_integer
