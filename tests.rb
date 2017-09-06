@@ -219,20 +219,24 @@ class VoteDataAdaptorTests < Minitest::Test
   def test_vote_data_adaptor_initialize
     assert(@@dataAdapt)
     assert(@@dataAdapt.cards)
+    assert_instance_of(Card, @@dataAdapt.cards.values.first)
     assert(@@dataAdapt.users)
+    assert_instance_of(User, @@dataAdapt.users.values.first)
     assert(@@dataAdapt.votes)
+    assert_instance_of(Hash, @@dataAdapt.votes.values.first)
     assert(@@dataAdapt.convos)
+    assert_instance_of(Conversation, @@dataAdapt.convos.values.first)
+  end
+
+  def test_vote_hash_properly_formed
+    a_card_body = @@dataAdapt.cards.values.first.body
+    a_username = @@dataAdapt.users.values.first.username
+    assert_instance_of(Hash, @@dataAdapt.votes[a_card_body])
+    assert_instance_of(Vote, @@dataAdapt.votes[a_card_body][a_username])
   end
 
   def test_calculate_convo_scores
     @@dataAdapt.write_to_file(['eins','zwei','drei'], 'delete_please.csv')
     assert_equal(@@mock_csv_file, ['eins','zwei','drei'])
   end
-
-    # assert(CONVO1.recommendation_for(SUE, CARD5).weighted_prediction < 0)
-    # assert(CONVO1.recommendation_for(SUE, CARD6).weighted_prediction > 0)
-    # assert(CONVO1.recommendation_for(SUE, CARD7).weighted_prediction < 0)
-    # assert_equal(CONVO1.recommendation_for(SUE, CARD8).weighted_prediction, 1)
-
-
 end
