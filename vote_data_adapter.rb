@@ -86,53 +86,62 @@ class VoteDataAdaptor
     end
 
     def load_users
-      users = []
+      puts 'Initializing users...' if @verbose
+      @users = Hash.new
       bar1 = ProgressBar.new(@row_count) if @verbose
       @rows.each do |row|
         username, post_id, vote_value = row
-        users << User.new(username)
+        @users[username] = User.new(username)
         bar1.increment! if @verbose
       end
-      puts 'Users loaded. Removing duplicates...' if @verbose
-      @users = users.uniq
-      puts "There are #{@users.length} users." if @verbose
+      puts "Users loaded. There are #{@users.length} users." if @verbose
     end
 
     def load_cards
-      cards = []
+      puts 'Initializing cards...' if @verbose
+      @cards = Hash.new
       bar2 = ProgressBar.new(@row_count) if @verbose
       @rows.each do |row|
         username, post_id, vote_value = row
-        cards << Card.new(post_id)
+        card = Card.new(post_id)
+        # vote = Vote.new(card, vote_value)
+        @cards[post_id] = card
+        # user = @users.select { |u| u.username == username }.first
+        # user.add_vote(vote)
+        # @votes << vote
         bar2.increment! if @verbose
       end
-      puts 'Cards loaded. Removing duplicates...' if @verbose
-      @cards = cards.uniq
-      puts "There are #{@cards.length} cards." if @verbose
+      # print 'Cards loaded. Removing duplicates...' if @verbose
+      # @cards = cards.uniq
+      puts "Cards loaded. There are #{@cards.length} cards." if @verbose
     end
 
     def load_votes
+      puts 'Initializing votes...' if @verbose
       bar3 = ProgressBar.new(@row_count) if @verbose
-      @votes = []
+      @votes = Hash.new
       @rows.each do |row|
         username, post_id, vote_value = row
-        user = @users.select { |u| u.username == username }.first
-        card = @cards.select { |c| c.body == post_id }.first
+        user = @users[username] #@users.select { |u| u.username == username }.first
+        card = @cards[post_id] #@cards.select { |c| c.body == post_id }.first
         vote = Vote.new(card, vote_value)
         user.add_vote(vote)
-        @votes << vote
+        @votes[post_id] ||= Hash.new
+        @votes[post_id][username] = vote
         bar3.increment! if @verbose
       end
       puts "Votes loaded. There are #{@votes.length} votes." if @verbose
     end
 
     def load_convos
-      @convos = []
-      @cards.each do |card|
-        users_on_card = @users.select do |user|
+      puts 'Initializing convos...' if @verbose
+      @convos = Hash.new
+      @cards.values.each do |card|
+        users_on_card = @users.values.select do |user|
           not user.vote_on(card).nil?
         end
-        @convos << Conversation.new(users_on_card, card)
+        @convos[card.body] = Conversation.new(users_on_card, card)
       end
+      puts "Convos loaded. There are #{@convos.length} convos." if @verbose
     end
 end

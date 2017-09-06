@@ -209,12 +209,30 @@ class ConversationTests < Minitest::Test
 end
 
 class VoteDataAdaptorTests < Minitest::Test
-  def test_vote_data_adaptor_initialize
-    dataAdapt = VoteDataAdaptor.new('testData.csv', verbose=false)
-    assert(dataAdapt)
-    assert(dataAdapt.cards)
-    assert(dataAdapt.users)
-    assert(dataAdapt.votes)
-    assert(dataAdapt.convos)
+  @@dataAdapt = VoteDataAdaptor.new('testData.csv', verbose=false)
+
+  def CSV.open(filename, opts, &block)
+    @@mock_csv_file = []
+    block.call(@@mock_csv_file)
   end
+
+  def test_vote_data_adaptor_initialize
+    assert(@@dataAdapt)
+    assert(@@dataAdapt.cards)
+    assert(@@dataAdapt.users)
+    assert(@@dataAdapt.votes)
+    assert(@@dataAdapt.convos)
+  end
+
+  def test_calculate_convo_scores
+    @@dataAdapt.write_to_file(['eins','zwei','drei'], 'delete_please.csv')
+    assert_equal(@@mock_csv_file, ['eins','zwei','drei'])
+  end
+
+    # assert(CONVO1.recommendation_for(SUE, CARD5).weighted_prediction < 0)
+    # assert(CONVO1.recommendation_for(SUE, CARD6).weighted_prediction > 0)
+    # assert(CONVO1.recommendation_for(SUE, CARD7).weighted_prediction < 0)
+    # assert_equal(CONVO1.recommendation_for(SUE, CARD8).weighted_prediction, 1)
+
+
 end
