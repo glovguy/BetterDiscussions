@@ -29,12 +29,12 @@ class Conversation
       u.vote_on(card).nil?
     end
     return nil unless users_who_voted.length > 1
-    chi_sqr_stat = users_who_voted.inject(0) do |sum, u|
-      pred = likelihood_of_pos_vote(u, card)
-      numer = (u.vote_on(card).score - pred) ** 2
-      denom = pred
-      numer / denom
+    table_sums = users_who_voted.inject({'pred'=>0,'obs'=>0}) do |sum, u|
+      sum['pred'] += likelihood_of_pos_vote(u, card)
+      sum['obs'] += u.vote_on(card).score
+      sum
     end
+    chi_sqr_stat = ( (table_sums['obs'] - table_sums['pred']) ** 2 ) / table_sums['pred']
     Statistics2.chi2dist(1, chi_sqr_stat)
   end
 
