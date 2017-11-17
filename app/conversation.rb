@@ -1,7 +1,8 @@
 require "statistics2"
-require_relative "cards.rb"
+require_relative './recommendation.rb'
 
 class Conversation
+  'it understands a collection of related cards'
   attr_reader :users, :cards
 
   PRIOR = Recommendation.new(0, 1)

@@ -1,8 +1,12 @@
 require 'minitest/autorun'
-require_relative './cards.rb'
-require_relative './conversations.rb'
+require_relative '../app/card.rb'
+require_relative '../app/conversation.rb'
+require_relative '../app/recommendation.rb'
+require_relative '../app/similarity.rb'
+require_relative '../app/user.rb'
+require_relative '../app/vote.rb'
 require_relative './test_setup.rb'
-require_relative './vote_data_adapter.rb'
+# require './scripts/vote_data_adapter.rb'
 
 class CardTests < Minitest::Test
   def test_card_equality
@@ -12,21 +16,15 @@ class CardTests < Minitest::Test
   def test_card_hash_equality
     assert_equal(Card.new('body').hash, Card.new('body').hash)
   end
+end
 
+class UserTests < Minitest::Test
   def test_user_equality
     assert(User.new('bane').eql? User.new('bane'))
   end
 
   def test_user_hash_equality
     assert_equal(User.new('bane').hash, User.new('bane').hash)
-  end
-
-  def test_vote_equality
-    assert(Vote.new(CARD1,-1).eql? Vote.new(CARD1, -1))
-  end
-
-  def test_vote_hash_equality
-    assert_equal(Vote.new(CARD1, -1).hash, Vote.new(CARD1, -1).hash)
   end
 
   def test_user_can_have_vote
@@ -50,25 +48,27 @@ class CardTests < Minitest::Test
       ALICE.similarity_with(BOB, exclude=[CARD2])
       )
   end
+end
 
+class SimiliarityMetricTests < Minitest::Test
   def test_user_distance_equality
     assert_equal(
-      USER_DISTANCE_SIMILARITY.call(SUE, ROBERT),
-      USER_DISTANCE_SIMILARITY.call(ROBERT, SUE)
+      Similarity::USER_DISTANCE.call(SUE, ROBERT),
+      Similarity::USER_DISTANCE.call(ROBERT, SUE)
       )
   end
 
   def test_user_distance_greater_than
     assert(
-      USER_DISTANCE_SIMILARITY.call(SUE, ROBERT) >
-        USER_DISTANCE_SIMILARITY.call(JAN, ROBERT)
+      Similarity::USER_DISTANCE.call(SUE, ROBERT) >
+        Similarity::USER_DISTANCE.call(JAN, ROBERT)
       )
   end
 
   def test_distance_range
     CONVO1.users.each do |user1|
       CONVO1.users.each do |user2|
-        dist = USER_DISTANCE_SIMILARITY.call(user1, user2)
+        dist = Similarity::USER_DISTANCE.call(user1, user2)
         assert(dist >= 0.0)
         assert(dist <= 1.0)
       end
@@ -76,24 +76,24 @@ class CardTests < Minitest::Test
   end
 
   def test_distance_with_self
-    assert_equal(USER_DISTANCE_SIMILARITY.call(SUE, SUE), 1.0)
+    assert_equal(Similarity::USER_DISTANCE.call(SUE, SUE), 1.0)
   end
 
   def test_distance_totally_unrelated_user
-    assert_equal(USER_DISTANCE_SIMILARITY.call(ALICE, USER_WITH_NO_VOTES), 0.0)
+    assert_equal(Similarity::USER_DISTANCE.call(ALICE, USER_WITH_NO_VOTES), 0.0)
   end
 
   def test_user_distance_excluding
-    assert(USER_DISTANCE_SIMILARITY.call(ALICE, BOB) <
-      USER_DISTANCE_SIMILARITY.call(ALICE, BOB, exclude=[CARD2]))
-    assert_equal(USER_DISTANCE_SIMILARITY.call(ALICE, BOB, exclude=[CARD1,CARD2,CARD3,CARD4]), 0.0)
+    assert(Similarity::USER_DISTANCE.call(ALICE, BOB) <
+      Similarity::USER_DISTANCE.call(ALICE, BOB, exclude=[CARD2]))
+    assert_equal(Similarity::USER_DISTANCE.call(ALICE, BOB, exclude=[CARD1,CARD2,CARD3,CARD4]), 0.0)
   end
 
   def test_pearson_score_range
     non_zero = false
     CONVO1.users.each do |user1|
       CONVO1.users.each do |user2|
-        dist = PEARSON_SCORE_SIMILARITY.call(user1, user2)
+        dist = Similarity::PEARSON_SCORE.call(user1, user2)
         assert(dist >= -1.0)
         assert(dist <= 1.0)
         non_zero = true if not dist.zero?
@@ -103,21 +103,33 @@ class CardTests < Minitest::Test
   end
 
   def test_pearson_score_commutitivity
-    assert_equal(USER_DISTANCE_SIMILARITY.call(PHIL, SUE),
-      USER_DISTANCE_SIMILARITY.call(PHIL, SUE))
+    assert_equal(Similarity::USER_DISTANCE.call(PHIL, SUE),
+      Similarity::USER_DISTANCE.call(PHIL, SUE))
   end
 
   def test_pearson_score_excluding
-    assert(PEARSON_SCORE_SIMILARITY.call(SALLY, JAN) <
-      PEARSON_SCORE_SIMILARITY.call(SALLY, JAN, exclude=[CARD2,CARD4]))
-    assert_equal(PEARSON_SCORE_SIMILARITY.call(ALICE, BOB, exclude=[CARD1,CARD2,CARD3,CARD4]), 0.0)
+    assert(Similarity::PEARSON_SCORE.call(SALLY, JAN) <
+      Similarity::PEARSON_SCORE.call(SALLY, JAN, exclude=[CARD2,CARD4]))
+    assert_equal(Similarity::PEARSON_SCORE.call(ALICE, BOB, exclude=[CARD1,CARD2,CARD3,CARD4]), 0.0)
+  end
+end
+
+class VoteTests < Minitest::Test
+  def test_vote_equality
+    assert(Vote.new(CARD1,-1).eql? Vote.new(CARD1, -1))
+  end
+
+  def test_vote_hash_equality
+    assert_equal(Vote.new(CARD1, -1).hash, Vote.new(CARD1, -1).hash)
   end
 
   def test_vote_converts_score_to_integer
     vote1 = Vote.new(CARD1, '-1')
     refute_equal(vote1.score.class, String)
   end
+end
 
+class RecommendationTests < Minitest::Test
   def test_recommendation_adding
     rec1 = Recommendation.new(1, 2)
     rec2 = Recommendation.new(2, 4)
@@ -144,7 +156,9 @@ class CardTests < Minitest::Test
     rec2 = Recommendation.new(4.5, 6)
     assert_equal(rec1.pos_vote_chance, 0.5)
   end
+end
 
+class ConversationTests < Minitest::Test
   def test_likelihood_of_pos_vote_range
     likelihoods = CONVO1.cards.map { |c| CONVO1.likelihood_of_pos_vote(PHIL, c) }
     likelihoods.each do |l|
@@ -161,9 +175,6 @@ class CardTests < Minitest::Test
       assert_equal(l[0] + l[1], 1)
     end
   end
-end
-
-class ConversationTests < Minitest::Test
   def test_recommendation_for
     assert(CONVO1.recommendation_for(SUE, CARD5).weighted_prediction < 0)
     assert(CONVO1.recommendation_for(SUE, CARD6).weighted_prediction > 0)
@@ -199,44 +210,37 @@ class ConversationTests < Minitest::Test
   def test_chi_squared_likelihood_for_card_with_one_vote_returns_nil
     CONVO1.chi_squared_likelihood(CARD10)
   end
-
-  # def test_card_entropy
-  #   assert(CONVO1.card_entropy(CARD1) > 0)
-  #   entropies = CONVO1.cards.map do |c|
-  #     { c => CONVO1.card_entropy(c) }
-  #   end
-  # end
 end
 
-class VoteDataAdaptorTests < Minitest::Test
-  @@dataAdapt = VoteDataAdaptor.new('testData.csv', verbose=false)
+# class VoteDataAdaptorTests < Minitest::Test
+#   @@dataAdapt = VoteDataAdaptor.new('testData.csv', verbose=false)
 
-  def CSV.open(filename, opts, &block)
-    @@mock_csv_file = []
-    block.call(@@mock_csv_file)
-  end
+#   def CSV.open(filename, opts, &block)
+#     @@mock_csv_file = []
+#     block.call(@@mock_csv_file)
+#   end
 
-  def test_vote_data_adaptor_initialize
-    assert(@@dataAdapt)
-    assert(@@dataAdapt.cards)
-    assert_instance_of(Card, @@dataAdapt.cards.values.first)
-    assert(@@dataAdapt.users)
-    assert_instance_of(User, @@dataAdapt.users.values.first)
-    assert(@@dataAdapt.votes)
-    assert_instance_of(Hash, @@dataAdapt.votes.values.first)
-    assert(@@dataAdapt.convos)
-    assert_instance_of(Conversation, @@dataAdapt.convos.values.first)
-  end
+#   def test_vote_data_adaptor_initialize
+#     assert(@@dataAdapt)
+#     assert(@@dataAdapt.cards)
+#     assert_instance_of(Card, @@dataAdapt.cards.values.first)
+#     assert(@@dataAdapt.users)
+#     assert_instance_of(User, @@dataAdapt.users.values.first)
+#     assert(@@dataAdapt.votes)
+#     assert_instance_of(Hash, @@dataAdapt.votes.values.first)
+#     assert(@@dataAdapt.convos)
+#     assert_instance_of(Conversation, @@dataAdapt.convos.values.first)
+#   end
 
-  def test_vote_hash_properly_formed
-    a_card_body = @@dataAdapt.cards.values.first.body
-    a_username = @@dataAdapt.users.values.first.username
-    assert_instance_of(Hash, @@dataAdapt.votes[a_card_body])
-    assert_instance_of(Vote, @@dataAdapt.votes[a_card_body][a_username])
-  end
+#   def test_vote_hash_properly_formed
+#     a_card_body = @@dataAdapt.cards.values.first.body
+#     a_username = @@dataAdapt.users.values.first.username
+#     assert_instance_of(Hash, @@dataAdapt.votes[a_card_body])
+#     assert_instance_of(Vote, @@dataAdapt.votes[a_card_body][a_username])
+#   end
 
-  def test_calculate_convo_scores
-    @@dataAdapt.write_to_file(['eins','zwei','drei'], 'delete_please.csv')
-    assert_equal(@@mock_csv_file, ['eins','zwei','drei'])
-  end
-end
+#   def test_calculate_convo_scores
+#     @@dataAdapt.write_to_file(['eins','zwei','drei'], 'delete_please.csv')
+#     assert_equal(@@mock_csv_file, ['eins','zwei','drei'])
+#   end
+# end
