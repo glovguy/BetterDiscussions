@@ -8,7 +8,7 @@ class Vote
     @score = score.to_i
   end
 
-  def eql? other
+  def ==(other)
     @card == other.card && @score == other.score
   end
 

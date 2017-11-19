@@ -7,11 +7,12 @@ require_relative '../app/vote.rb'
 require_relative '../app/recommendation.rb'
 require_relative '../app/user.rb'
 require_relative '../app/conversation.rb'
-require_relative '../scripts/vote_data_adapter.rb'
+require_relative '../scripts/load_csv.rb'
 
 class CardTests < Minitest::Test
   def test_card_equality
-    assert(Card.new('body').eql? Card.new('body'))
+    assert_equal(Card.new('body'), Card.new('body'))
+    assert(Card.new('body') != Card.new('something'))
   end
 
   def test_card_hash_equality
@@ -21,7 +22,7 @@ end
 
 class UserTests < Minitest::Test
   def test_user_equality
-    assert(User.new('bane').eql? User.new('bane'))
+    assert_equal(User.new('bane'), User.new('bane'))
   end
 
   def test_user_hash_equality
@@ -117,7 +118,7 @@ end
 
 class VoteTests < Minitest::Test
   def test_vote_equality
-    assert(Vote.new(CARD1,-1).eql? Vote.new(CARD1, -1))
+    assert_equal(Vote.new(CARD1,-1), Vote.new(CARD1, -1))
   end
 
   def test_vote_hash_equality
@@ -213,28 +214,29 @@ class ConversationTests < Minitest::Test
   end
 end
 
-class VoteDataAdaptorTests < Minitest::Test
-  # def CSV.open(filename, opts, &block)
-  #   @@mock_csv_file = []
-  #   block.call(@@mock_csv_file)
-  # end
-
+class LoadCsvTests < Minitest::Test
   def test_load_users
     testRow = [['abc123','t9_barfig','1']]
     comparisonHash = { 'abc123' => User.new('abc123') }
 
-    usersHash = VoteDataAdaptor::load_users(testRow)
-    assert(usersHash.keys.eql? comparisonHash.keys)
-    assert(usersHash.values.eql? comparisonHash.values)
+    usersHash = LoadCsv::users(testRow)
+    assert_equal(usersHash.keys, comparisonHash.keys)
+    assert_equal(usersHash.values, comparisonHash.values)
   end
 
   def test_load_cards
     testRow = [['abc123','t9_barfig','1']]
     comparisonHash = { 't9_barfig' => Card.new('t9_barfig') }
 
-    cardsHash = VoteDataAdaptor::load_cards(testRow)
+    cardsHash = LoadCsv::cards(testRow)
     assert(cardsHash.keys.eql? comparisonHash.keys)
-    assert(cardsHash.values.eql? comparisonHash.values)
+    assert_equal(cardsHash.values, comparisonHash.values)
+  end
+
+  def test_load_cards_with_more_than_one_vote
+    cards = LoadCsv::cards_with_more_than_one_vote(TestCsvRows)
+    expected = [Card.new('t9_barfig'), Card.new('t9_barfpu'), Card.new('t9_binsop')]
+    assert_equal(expected, cards)
   end
 
   def test_load_votes
@@ -244,9 +246,9 @@ class VoteDataAdaptorTests < Minitest::Test
     cards = { 't9_barfig' => testCard }
     users = { 'abc123' => testUser }
 
-    votesHash = VoteDataAdaptor::load_votes(testRow, users, cards)
+    votesHash = LoadCsv::votes(testRow, users, cards)
     assert(testUser.vote_for(testCard), Vote.new(testCard, '1'))
-    assert(votesHash['t9_barfig']['abc123'].eql? Vote.new(testCard, '1'))
+    assert_equal(votesHash['t9_barfig']['abc123'], Vote.new(testCard, '1'))
   end
 
   def test_load_convos
@@ -256,7 +258,7 @@ class VoteDataAdaptorTests < Minitest::Test
     users = { 'abc123' => testUser }
     votes = { 't9_barfig' => { 'abc123' => testUser } }
 
-    convoHash = VoteDataAdaptor::load_convos(users, cards, votes)
+    convoHash = LoadCsv::convos(users, cards, votes)
     assert_equal(convoHash['t9_barfig'].cards, [testCard])
     assert_equal(convoHash['t9_barfig'].users, [testUser])
   end
@@ -273,34 +275,19 @@ class VoteDataAdaptorTests < Minitest::Test
       't9_bardtic' => { 'xyz456' => testUserXyz }
     }
 
-    convoHash = VoteDataAdaptor::load_convos(usersHash, cardsHash, votesHash)
+    convoHash = LoadCsv::convos(usersHash, cardsHash, votesHash)
     assert_equal(convoHash['t9_barfig'].users, [testUserAbc])
     assert_equal(convoHash['t9_barfig'].cards, [testCard1])
     assert_equal(convoHash['t9_bardtic'].users, [testUserXyz])
     assert_equal(convoHash['t9_bardtic'].cards, [testCard2])
   end
 
-  # def test_vote_data_adaptor_initialize
-  #   # assert(@@dataAdapt)
-  #   assert(@@dataAdapt.cards)
-  #   assert_instance_of(Card, @@dataAdapt.cards.values.first)
-  #   assert(@@dataAdapt.users)
-  #   assert_instance_of(User, @@dataAdapt.users.values.first)
-  #   assert(@@dataAdapt.votes)
-  #   assert_instance_of(Hash, @@dataAdapt.votes.values.first)
-  #   assert(@@dataAdapt.convos)
-  #   assert_instance_of(Conversation, @@dataAdapt.convos.values.first)
-  # end
-
-#   def test_vote_hash_properly_formed
-#     a_card_body = @@dataAdapt.cards.values.first.body
-#     a_username = @@dataAdapt.users.values.first.username
-#     assert_instance_of(Hash, @@dataAdapt.votes[a_card_body])
-#     assert_instance_of(Vote, @@dataAdapt.votes[a_card_body][a_username])
-#   end
-
-#   def test_calculate_convo_scores
-#     @@dataAdapt.write_to_file(['eins','zwei','drei'], 'delete_please.csv')
-#     assert_equal(@@mock_csv_file, ['eins','zwei','drei'])
-#   end
+  def test_write_file
+    def CSV.open(filename, opts, &block)
+      block.call(@@mock_csv_file)
+    end
+    @@mock_csv_file = []
+    LoadCsv::write_to_file(['eins','zwei','drei'], 'delete_please.csv')
+    assert_equal(@@mock_csv_file, ['eins','zwei','drei'])
+  end
 end

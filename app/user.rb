@@ -9,7 +9,7 @@ class User
     @votes = votes
   end
 
-  def eql? other
+  def ==(other)
     @username == other.username
   end
 

@@ -5,20 +5,14 @@ require_relative '../app/vote.rb'
 require_relative '../app/card.rb'
 require_relative '../app/conversation.rb'
 
-# turn into to module of pure functions, then run them in script file
-module VoteDataAdaptor
-  attr_reader :cards
-  attr_reader :users
-  attr_reader :votes
-  attr_reader :convos
-
-  def self.load_data(filepath, verbose=false)
-    rows = csv_rows(filepath, verbose)
-    users = load_users(rows, verbose)
-    cards = load_cards(rows, verbose)
-    votes = load_votes(rows, verbose)
-    convos = load_convos(rows, verbose)
-  end
+module LoadCsv
+  # def self.data(filepath, verbose=false)
+  #   rows = csv_rows(filepath, verbose)
+  #   users = users(rows, verbose)
+  #   cards = cards(rows, verbose)
+  #   votes = votes(rows, verbose)
+  #   convos = convos(rows, verbose)
+  # end
 
   def self.write_to_file(data, filename)
     CSV.open(filename, "w") do |csv|
@@ -38,7 +32,7 @@ module VoteDataAdaptor
     rows
   end
 
-  def self.load_users(rows, verbose=false)
+  def self.users(rows, verbose=false)
     puts 'Initializing users...' if verbose
     users = Hash.new
     progress = ProgressBar.new(rows.length) if verbose
@@ -51,7 +45,7 @@ module VoteDataAdaptor
     users
   end
 
-  def self.load_cards(rows, verbose=false)
+  def self.cards(rows, verbose=false)
     puts 'Initializing cards...' if verbose
     cards = Hash.new
     progress = ProgressBar.new(rows.length) if verbose
@@ -65,7 +59,21 @@ module VoteDataAdaptor
     cards
   end
 
-  def self.load_votes(rows, users, cards, verbose=false)
+  def self.cards_with_more_than_one_vote(rows, verbose=false)
+    puts 'Initializing cards with more than one vote...' if verbose
+    cards_seen = Hash.new.tap { |h| h.default = 0 }
+    progress = ProgressBar.new(rows.length) if verbose
+    rows.each do |row|
+      username, post_id, vote_value = row
+      cards_seen[post_id] += 1
+      progress.increment! if verbose
+    end
+    cards_seen.select! { |post_id, count| count > 1 }
+    puts "Cards loaded. There are #{cards.length} cards." if verbose
+    cards_seen.keys.map { |post_id| Card.new(post_id) }
+  end
+
+  def self.votes(rows, users, cards, verbose=false)
     puts 'Initializing votes...' if verbose
     progress = ProgressBar.new(rows.length) if verbose
     votes = Hash.new
@@ -83,7 +91,7 @@ module VoteDataAdaptor
     votes
   end
 
-  def self.load_convos(users, cards, votes, verbose=false)
+  def self.convos(users, cards, votes, verbose=false)
     puts 'Initializing convos...' if verbose
     progress = ProgressBar.new(cards.length) if verbose
     convos = Hash.new
@@ -100,4 +108,7 @@ module VoteDataAdaptor
     puts "Convos loaded. There are #{convos.length} convos." if verbose
     convos
   end
+
+  # def self.convo_from_csv()
+  # end
 end

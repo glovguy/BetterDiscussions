@@ -7,7 +7,7 @@ class Card
     @replies = []
   end
 
-  def eql? other
+  def ==(other)
     @body == other.body
   end
 
