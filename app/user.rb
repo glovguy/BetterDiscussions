@@ -25,7 +25,7 @@ class User
     @votes.map { |v| v.card }
   end
 
-  def vote_on(card)
+  def vote_for(card)
     @votes.find { |v| v.card == card }
   end
 
@@ -36,7 +36,7 @@ class User
   def recommendation_for(user, card)
     return nil if self.common_cards_voted(user) == []
     sim = similarity_with(user)
-    Recommendation.new(vote_on(card).score * sim, sim)
+    Recommendation.new(vote_for(card).score * sim, sim)
   end
 
   def common_cards_voted(other)

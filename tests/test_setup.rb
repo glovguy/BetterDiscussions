@@ -1,3 +1,10 @@
+require_relative '../app/similarity.rb'
+require_relative '../app/card.rb'
+require_relative '../app/vote.rb'
+require_relative '../app/recommendation.rb'
+require_relative '../app/user.rb'
+require_relative '../app/conversation.rb'
+
 CARD1 = Card.new('card1')
 CARD2 = Card.new('card2')
 CARD3 = Card.new('card3')
@@ -81,3 +88,13 @@ CONVO1 = Conversation.new(
     CARD6, CARD7, CARD8, CARD9, CARD10,
     CARD_NO_ONE_HAS_VOTED_ON]
   )
+
+TestCsvRows = [
+  ['abc123','t9_barfig','1'],
+  ['abc123','t9_barfpu','1'],
+  ['abc123','t9_binsop','1'],
+  ['blogmonster','t9_barfig','1'],
+  ['blogmonster','t9_binsop','1'],
+  ['blogmonster','t9_barfpu','-1'],
+  ['blogmonster','t9_baondig','1']
+]

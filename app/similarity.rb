@@ -3,7 +3,7 @@ module Similarity
     common_cards = user1.common_cards_voted(user2) - exclude
     return 0 if common_cards == []
     total = common_cards.inject(0) do |sum, card|
-      ( user1.vote_on(card).score - user2.vote_on(card).score ) ** 2 + sum
+      ( user1.vote_for(card).score - user2.vote_for(card).score ) ** 2 + sum
     end
     final = 1.0/(Math.sqrt(total)+1)
   end
@@ -12,14 +12,14 @@ module Similarity
     common_cards = user1.common_cards_voted(user2) - exclude
     return 0 if common_cards == []
 
-    sum1 = common_cards.inject(0) { |sum, card| sum + user1.vote_on(card).score }
-    sum2 = common_cards.inject(0) { |sum, card| sum + user2.vote_on(card).score }
+    sum1 = common_cards.inject(0) { |sum, card| sum + user1.vote_for(card).score }
+    sum2 = common_cards.inject(0) { |sum, card| sum + user2.vote_for(card).score }
 
-    sumSq1 = common_cards.inject(0) { |sum, card| sum + (user1.vote_on(card).score) ** 2 }
-    sumSq2 = common_cards.inject(0) { |sum, card| sum + (user2.vote_on(card).score) ** 2 }
+    sumSq1 = common_cards.inject(0) { |sum, card| sum + (user1.vote_for(card).score) ** 2 }
+    sumSq2 = common_cards.inject(0) { |sum, card| sum + (user2.vote_for(card).score) ** 2 }
 
     pSum = common_cards.inject(0) do |sum, card|
-      sum + (user1.vote_on(card).score * user2.vote_on(card).score)
+      sum + (user1.vote_for(card).score * user2.vote_for(card).score)
     end
 
     numer = pSum - (sum1*sum2/common_cards.length)
