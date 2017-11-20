@@ -96,5 +96,6 @@ TestCsvRows = [
   ['blogmonster','t9_barfig','1'],
   ['blogmonster','t9_binsop','1'],
   ['blogmonster','t9_barfpu','-1'],
-  ['blogmonster','t9_baondig','1']
+  ['blogmonster','t9_baondig','1'],
+  ['wrongwarp','t9_biiviig','1']
 ]

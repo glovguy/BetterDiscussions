@@ -1,8 +1,8 @@
-SIMILARITY_METRIC = Similarity::USER_DISTANCE
-
 class User
   'it understands someone who interacts with content'
   attr_reader :username
+
+  SIMILARITY_METRIC = Similarity::USER_DISTANCE
 
   def initialize(username, *votes)
     @username = username.to_s
@@ -36,7 +36,7 @@ class User
   def recommendation_for(user, card)
     return nil if self.common_cards_voted(user) == []
     sim = similarity_with(user)
-    Recommendation.new(vote_for(card).score * sim, sim)
+    Recommendation.new(vote_for(card).attitude, sim)
   end
 
   def common_cards_voted(other)

@@ -6,14 +6,6 @@ require_relative '../app/card.rb'
 require_relative '../app/conversation.rb'
 
 module LoadCsv
-  # def self.data(filepath, verbose=false)
-  #   rows = csv_rows(filepath, verbose)
-  #   users = users(rows, verbose)
-  #   cards = cards(rows, verbose)
-  #   votes = votes(rows, verbose)
-  #   convos = convos(rows, verbose)
-  # end
-
   def self.write_to_file(data, filename)
     CSV.open(filename, "w") do |csv|
       data.each { |s| csv << s }
@@ -43,6 +35,25 @@ module LoadCsv
     end
     puts "Users loaded. There are #{users.length} users." if verbose
     users
+  end
+
+  def self.users_who_voted_on_cards(rows, cards, verbose=false)
+    puts 'Initializing users who voted on those cards...' if verbose
+    users = Hash.new
+    users.default_proc = proc do |hash, key|
+      hash[key] = User.new(key)
+    end
+    progress = ProgressBar.new(rows.length) if verbose
+    rows.each do |row|
+      username, post_id, vote_value = row
+      card = cards.select { |card| card.body == post_id }.first
+      next unless card
+      vote = Vote.new(card, vote_value)
+      users[username].add_vote(vote)
+      progress.increment! if verbose
+    end
+    puts "Users loaded. There are #{users.length} users." if verbose
+    users.values
   end
 
   def self.cards(rows, verbose=false)
@@ -79,8 +90,8 @@ module LoadCsv
     votes = Hash.new
     rows.each do |row|
       username, post_id, vote_value = row
-      user = users[username] #@users.select { |u| u.username == username }.first
-      card = cards[post_id] #@cards.select { |c| c.body == post_id }.first
+      user = users[username]
+      card = cards[post_id]
       vote = Vote.new(card, vote_value)
       user.add_vote(vote)
       votes[post_id] ||= Hash.new
@@ -96,10 +107,6 @@ module LoadCsv
     progress = ProgressBar.new(cards.length) if verbose
     convos = Hash.new
     cards.values.each do |card|
-      # users_on_card = @users.values.select do |user|
-      #   not user.vote_on(card).nil?
-      # end
-      ## Utilize the hashes to speed this up!
       usernames_on_card = votes[card.body].keys
       users_on_card = users.values.select { |user| usernames_on_card.include?(user.username) }
       convos[card.body] = Conversation.new(users_on_card, card)
@@ -108,7 +115,4 @@ module LoadCsv
     puts "Convos loaded. There are #{convos.length} convos." if verbose
     convos
   end
-
-  # def self.convo_from_csv()
-  # end
 end

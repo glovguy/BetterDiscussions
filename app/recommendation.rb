@@ -1,32 +1,28 @@
 class Recommendation
-  'it understands a vote prediction that user would have on a card'
-  attr_reader :score_sum
-  attr_reader :sim_sum
-  protected :score_sum
-  protected :sim_sum
+  'it understands a vote prediction that a user would have on a card'
+  attr_reader :attitude
+  attr_reader :similarity_sum
+  protected :attitude
+  protected :similarity_sum
 
-  def initialize(score_sum, sim_sum)
-    @score_sum = score_sum
-    @sim_sum = sim_sum
+  def initialize(attitude, similarity_sum)
+    @attitude = attitude.normalized * similarity_sum
+    @similarity_sum = similarity_sum
   end
 
   def +(other)
     return self unless other.class == Recommendation
-    Recommendation.new(@score_sum + other.score_sum, @sim_sum + other.sim_sum)
+    @attitude += other.attitude
+    @similarity_sum += other.similarity_sum
+    self
   end
 
   def weighted_prediction
-    return 0 unless @sim_sum != 0
-    @score_sum / @sim_sum
+    return 0 if @similarity_sum == 0
+    @attitude / @similarity_sum #/
   end
 
-  def pos_vote_chance
-    numer = (weighted_prediction) + 1
-    denom = 2.0
-    numer / denom
-  end
-
-  def neg_vote_chance
-    1 - pos_vote_chance
+  def likelihood_of(attitude)
+    1 - (weighted_prediction - attitude.normalized).abs
   end
 end
