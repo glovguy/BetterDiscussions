@@ -1,4 +1,4 @@
-require "statistics2"
+require 'statistics2'
 require_relative './recommendation.rb'
 
 ENTROPY = lambda do |prob|
@@ -9,20 +9,20 @@ TOTAL_ENTROPY = lambda do |prob|
   return (-prob * Math.log2(prob) - (1.0 - prob) * Math.log2(1.0 - prob)).abs
 end
 
+# it understands a group of cards that are compared to each other
 class Conversation
-  'it understands a group of cards that are compared to each other'
   attr_reader :users, :cards
 
   PRIOR = Recommendation.new(Attitude.new(0), 1)
 
-  def initialize(users=[], *cards)
+  def initialize(users = [], *cards)
     @users = users
     @cards = cards.flatten
   end
 
   def recommendation_for(user, card)
-    other_users = @users.reject{ |u| u==user || u.vote_for(card).nil? }
-    rec = other_users.inject(nil) do |sum, u|
+    other_users = @users.reject { |u| u == user || u.vote_for(card).nil? }
+    other_users.inject(nil) do |sum, u|
       return sum if u.recommendation_for(user, card).nil?
       u.recommendation_for(user, card) + sum
     end

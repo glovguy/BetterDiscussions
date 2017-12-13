@@ -1,5 +1,5 @@
+# it understands a users reaction to a card
 class Vote
-  'it understands a users reaction to a card'
   attr_reader :card
   attr_reader :attitude
 
@@ -17,13 +17,13 @@ class Vote
   end
 
   def to_f
-    self.attitude.normalized
+    attitude.normalized
   end
 end
 
+# it understands a preference modelled as an interval
 class Attitude
-  'it understands a preference modelled as an interval'
-  def initialize(score, weight=1)
+  def initialize(score, weight = 1)
     @score = score.to_i
     @weight = weight
   end

@@ -7,12 +7,12 @@ require_relative '../app/conversation.rb'
 
 module LoadCsv
   def self.write_to_file(data, filename)
-    CSV.open(filename, "w") do |csv|
+    CSV.open(filename, 'w') do |csv|
       data.each { |s| csv << s }
     end
   end
 
-  def self.csv_rows(filepath, verbose=false)
+  def self.csv_rows(filepath, verbose = false)
     puts 'Loading file into memory...' if verbose
     progress = ProgressBar.new(IO.readlines(filepath).size) if verbose
     rows = []
@@ -24,12 +24,12 @@ module LoadCsv
     rows
   end
 
-  def self.users(rows, verbose=false)
+  def self.users(rows, verbose = false)
     puts 'Initializing users...' if verbose
-    users = Hash.new
+    users = {}
     progress = ProgressBar.new(rows.length) if verbose
     rows.each do |row|
-      username, post_id, vote_value = row
+      username, _post_id, _vote_value = row
       users[username] = User.new(username)
       progress.increment! if verbose
     end
@@ -37,16 +37,16 @@ module LoadCsv
     users
   end
 
-  def self.users_who_voted_on_cards(rows, cards, verbose=false)
+  def self.users_who_voted_on_cards(rows, cards, verbose = false)
     puts 'Initializing users who voted on those cards...' if verbose
-    users = Hash.new
+    users = {}
     users.default_proc = proc do |hash, key|
       hash[key] = User.new(key)
     end
     progress = ProgressBar.new(rows.length) if verbose
     rows.each do |row|
       username, post_id, vote_value = row
-      card = cards.select { |card| card.body == post_id }.first
+      card = cards.select { |c| c.body == post_id }.first
       next unless card
       vote = Vote.new(card, vote_value)
       users[username].add_vote(vote)
@@ -56,12 +56,12 @@ module LoadCsv
     users.values
   end
 
-  def self.cards(rows, verbose=false)
+  def self.cards(rows, verbose = false)
     puts 'Initializing cards...' if verbose
-    cards = Hash.new
+    cards = {}
     progress = ProgressBar.new(rows.length) if verbose
     rows.each do |row|
-      username, post_id, vote_value = row
+      _username, post_id, _vote_value = row
       card = Card.new(post_id)
       cards[post_id] = card
       progress.increment! if verbose
@@ -70,31 +70,31 @@ module LoadCsv
     cards
   end
 
-  def self.cards_with_more_than_one_vote(rows, verbose=false)
+  def self.cards_with_more_than_one_vote(rows, verbose = false)
     puts 'Initializing cards with more than one vote...' if verbose
-    cards_seen = Hash.new.tap { |h| h.default = 0 }
+    cards_seen = {}.tap { |h| h.default = 0 }
     progress = ProgressBar.new(rows.length) if verbose
     rows.each do |row|
-      username, post_id, vote_value = row
+      _username, post_id, _vote_value = row
       cards_seen[post_id] += 1
       progress.increment! if verbose
     end
-    cards_seen.select! { |post_id, count| count > 1 }
+    cards_seen.select! { |_post_id, count| count > 1 }
     puts "Cards loaded. There are #{cards.length} cards." if verbose
     cards_seen.keys.map { |post_id| Card.new(post_id) }
   end
 
-  def self.votes(rows, users, cards, verbose=false)
+  def self.votes(rows, users, cards, verbose = false)
     puts 'Initializing votes...' if verbose
     progress = ProgressBar.new(rows.length) if verbose
-    votes = Hash.new
+    votes = {}
     rows.each do |row|
       username, post_id, vote_value = row
       user = users[username]
       card = cards[post_id]
       vote = Vote.new(card, vote_value)
       user.add_vote(vote)
-      votes[post_id] ||= Hash.new
+      votes[post_id] ||= {}
       votes[post_id][username] = vote
       progress.increment! if verbose
     end
@@ -102,13 +102,15 @@ module LoadCsv
     votes
   end
 
-  def self.convos(users, cards, votes, verbose=false)
+  def self.convos(users, cards, votes, verbose = false)
     puts 'Initializing convos...' if verbose
     progress = ProgressBar.new(cards.length) if verbose
-    convos = Hash.new
-    cards.values.each do |card|
+    convos = {}
+    cards.each_value do |card|
       usernames_on_card = votes[card.body].keys
-      users_on_card = users.values.select { |user| usernames_on_card.include?(user.username) }
+      users_on_card = users.values.select do |user|
+        usernames_on_card.include?(user.username)
+      end
       convos[card.body] = Conversation.new(users_on_card, card)
       progress.increment! if verbose
     end

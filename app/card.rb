@@ -1,5 +1,5 @@
+# it understands content that can be voted on
 class Card
-  'it understands content that can be voted on'
   attr_reader :body
 
   def initialize(body)

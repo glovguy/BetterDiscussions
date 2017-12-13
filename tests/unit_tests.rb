@@ -35,20 +35,19 @@ class UserTests < Minitest::Test
     user1 = User.new('test')
     assert_equal(false, user1.cards_voted.include?(card1))
     user1.add_vote(vote1)
-    assert(user1.cards_voted.include? card1)
+    assert(user1.cards_voted.include?(card1))
   end
 
   def test_user_similarity_equality
     assert_equal(
       SUE.similarity_with(ROBERT),
       ROBERT.similarity_with(SUE)
-      )
+    )
   end
 
   def test_user_similarity_excluding
     assert(ALICE.similarity_with(BOB) <
-      ALICE.similarity_with(BOB, exclude=[CARD2])
-      )
+      ALICE.similarity_with(BOB, [CARD2]))
   end
 end
 
@@ -57,14 +56,14 @@ class SimiliarityMetricTests < Minitest::Test
     assert_equal(
       Similarity::USER_DISTANCE.call(SUE, ROBERT),
       Similarity::USER_DISTANCE.call(ROBERT, SUE)
-      )
+    )
   end
 
   def test_user_distance_greater_than
     assert(
       Similarity::USER_DISTANCE.call(SUE, ROBERT) >
         Similarity::USER_DISTANCE.call(JAN, ROBERT)
-      )
+    )
   end
 
   def test_distance_range
@@ -87,8 +86,13 @@ class SimiliarityMetricTests < Minitest::Test
 
   def test_user_distance_excluding
     assert(Similarity::USER_DISTANCE.call(ALICE, BOB) <
-      Similarity::USER_DISTANCE.call(ALICE, BOB, exclude=[CARD2]))
-    assert_equal(Similarity::USER_DISTANCE.call(ALICE, BOB, exclude=[CARD1,CARD2,CARD3,CARD4]), 0.0)
+      Similarity::USER_DISTANCE.call(ALICE, BOB, [CARD2]))
+    dist = Similarity::USER_DISTANCE.call(
+      ALICE,
+      BOB,
+      [CARD1, CARD2, CARD3, CARD4]
+    )
+    assert_equal(dist, 0.0)
   end
 
   def test_pearson_score_range
@@ -98,7 +102,7 @@ class SimiliarityMetricTests < Minitest::Test
         dist = Similarity::PEARSON_SCORE.call(user1, user2)
         assert(dist >= -1.0)
         assert(dist <= 1.0)
-        non_zero = true if not dist.zero?
+        non_zero = true unless dist.zero?
       end
     end
     assert(non_zero)
@@ -106,13 +110,16 @@ class SimiliarityMetricTests < Minitest::Test
 
   def test_pearson_score_commutitivity
     assert_equal(Similarity::USER_DISTANCE.call(PHIL, SUE),
-      Similarity::USER_DISTANCE.call(PHIL, SUE))
+                 Similarity::USER_DISTANCE.call(PHIL, SUE))
   end
 
   def test_pearson_score_excluding
     assert(Similarity::PEARSON_SCORE.call(SALLY, JAN) <
-      Similarity::PEARSON_SCORE.call(SALLY, JAN, exclude=[CARD2,CARD4]))
-    assert_equal(Similarity::PEARSON_SCORE.call(ALICE, BOB, exclude=[CARD1,CARD2,CARD3,CARD4]), 0.0)
+      Similarity::PEARSON_SCORE.call(SALLY, JAN, [CARD2, CARD4]))
+    assert_equal(
+      Similarity::PEARSON_SCORE.call(ALICE, BOB, [CARD1, CARD2, CARD3, CARD4]),
+      0.0
+    )
   end
 end
 
@@ -134,7 +141,7 @@ class RecommendationTests < Minitest::Test
     assert_equal(
       combined_rec.weighted_prediction,
       0.5
-      )
+    )
   end
 
   def test_recommendations
@@ -146,7 +153,7 @@ class RecommendationTests < Minitest::Test
 
   def test_recommendations_range
     recs = CONVO1.cards.map { |c| CONVO1.recommendation_for(PHIL, c) }
-    recs.reject{|r| r.nil?}.each do |rec|
+    recs.reject(&:nil?).each do |rec|
       assert(rec.weighted_prediction >= 0)
       assert(rec.weighted_prediction <= 1)
     end
@@ -186,11 +193,14 @@ class ConversationTests < Minitest::Test
   end
 
   def test_card_without_votes_returns_nil
-    assert_nil(CONVO1.recommendation_for ROBERT, CARD_NO_ONE_HAS_VOTED_ON)
+    assert_nil(CONVO1.recommendation_for(ROBERT, CARD_NO_ONE_HAS_VOTED_ON))
   end
 
   def test_card_user_has_voted_on_is_given_recommendation
-    assert_equal(CONVO1.recommendation_for(ROBERT, CARD1).weighted_prediction, 0.5224077499274828)
+    assert_equal(
+      CONVO1.recommendation_for(ROBERT, CARD1).weighted_prediction,
+      0.5224077499274828
+    )
   end
 
   def test_user_with_no_votes_is_given_nil_recommendation
@@ -202,19 +212,37 @@ class ConversationTests < Minitest::Test
   end
 
   def test_entropy_range
-    (2..10).to_a.each do |i|
-      assert(ENTROPY.call(1.0 / i) <= 1.0)
-      assert(ENTROPY.call(1.0 / i) >= 0.0)
+    (1..10).to_a.each do |i|
+      assert(ENTROPY.call(0.1 * i) <= 1.0)
+      assert(ENTROPY.call(0.1 * i) >= 0.0)
     end
   end
 
   def test_vote_entropy
-    assert_equal(CONVO1.vote_entropy(ROBERT, Vote.new(CARD7, 1)), 0.5174903359987708)
-    assert_equal(CONVO1.vote_entropy(JAN, Vote.new(CARD9, 1)), 0.5)
-    assert_equal(CONVO1.vote_entropy(PHIL, Vote.new(CARD9, 1)), 0.5188759492631944)
-    assert_equal(CONVO1.vote_entropy(SALLY, Vote.new(CARD7, 1)), 0.5122656108674634)
-    assert_equal(CONVO1.vote_entropy(SALLY, Vote.new(CARD7, -1)), 0.48498113460066844)
-    assert_equal(CONVO1.vote_entropy(SUE, Vote.new(CARD7, 1)), 0.5090950592365232)
+    assert_equal(
+      CONVO1.vote_entropy(ROBERT, Vote.new(CARD7, 1)),
+      0.5174903359987708
+    )
+    assert_equal(
+      CONVO1.vote_entropy(JAN, Vote.new(CARD9, 1)),
+      0.5
+    )
+    assert_equal(
+      CONVO1.vote_entropy(PHIL, Vote.new(CARD9, 1)),
+      0.5188759492631944
+    )
+    assert_equal(
+      CONVO1.vote_entropy(SALLY, Vote.new(CARD7, 1)),
+      0.5122656108674634
+    )
+    assert_equal(
+      CONVO1.vote_entropy(SALLY, Vote.new(CARD7, -1)),
+      0.48498113460066844
+    )
+    assert_equal(
+      CONVO1.vote_entropy(SUE, Vote.new(CARD7, 1)),
+      0.5090950592365232
+    )
   end
 
   def test_vote_entropy_is_one_for_user_and_vote_without_recommendation
@@ -224,85 +252,89 @@ end
 
 class LoadCsvTests < Minitest::Test
   def test_load_users
-    testRow = [['abc123','t9_barfig','1']]
-    comparisonHash = { 'abc123' => User.new('abc123') }
+    test_row = [%w[abc123 t9_barfig 1]]
+    comparison_hash = { 'abc123' => User.new('abc123') }
 
-    usersHash = LoadCsv::users(testRow)
-    assert_equal(usersHash.keys, comparisonHash.keys)
-    assert_equal(usersHash.values, comparisonHash.values)
+    users_hash = LoadCsv.users(test_row)
+    assert_equal(users_hash.keys, comparison_hash.keys)
+    assert_equal(users_hash.values, comparison_hash.values)
   end
 
   def test_users_who_voted_on_cards
     cards = [Card.new('t9_barfig')]
-    users = LoadCsv::users_who_voted_on_cards(TestCsvRows, cards)
+    users = LoadCsv.users_who_voted_on_cards(TEST_CSV_ROWS, cards)
     comparison = [User.new('abc123'), User.new('blogmonster')]
     assert_equal(users, comparison)
   end
 
   def test_load_cards
-    testRow = [['abc123','t9_barfig','1']]
-    comparisonHash = { 't9_barfig' => Card.new('t9_barfig') }
+    test_row = [%w[abc123 t9_barfig 1]]
+    comparison_hash = { 't9_barfig' => Card.new('t9_barfig') }
 
-    cardsHash = LoadCsv::cards(testRow)
-    assert(cardsHash.keys.eql? comparisonHash.keys)
-    assert_equal(cardsHash.values, comparisonHash.values)
+    cards_hash = LoadCsv.cards(test_row)
+    assert(cards_hash.keys.eql?(comparison_hash.keys))
+    assert_equal(cards_hash.values, comparison_hash.values)
   end
 
   def test_load_cards_with_more_than_one_vote
-    cards = LoadCsv::cards_with_more_than_one_vote(TestCsvRows)
-    expected = [Card.new('t9_barfig'), Card.new('t9_barfpu'), Card.new('t9_binsop')]
+    cards = LoadCsv.cards_with_more_than_one_vote(TEST_CSV_ROWS)
+    expected = [
+      Card.new('t9_barfig'),
+      Card.new('t9_barfpu'),
+      Card.new('t9_binsop')
+    ]
     assert_equal(expected, cards)
   end
 
   def test_load_votes
-    testRow = [['abc123','t9_barfig','1']]
-    testUser = User.new('abc123')
-    testCard = Card.new('t9_barfig')
-    cards = { 't9_barfig' => testCard }
-    users = { 'abc123' => testUser }
+    test_row = [%w[abc123 t9_barfig 1]]
+    test_user = User.new('abc123')
+    test_card = Card.new('t9_barfig')
+    cards = { 't9_barfig' => test_card }
+    users = { 'abc123' => test_user }
 
-    votesHash = LoadCsv::votes(testRow, users, cards)
-    assert(testUser.vote_for(testCard), Vote.new(testCard, '1'))
-    assert_equal(votesHash['t9_barfig']['abc123'], Vote.new(testCard, '1'))
+    votes_hash = LoadCsv.votes(test_row, users, cards)
+    assert(test_user.vote_for(test_card), Vote.new(test_card, '1'))
+    assert_equal(votes_hash['t9_barfig']['abc123'], Vote.new(test_card, '1'))
   end
 
   def test_load_convos
-    testUser = User.new('abc123')
-    testCard = Card.new('t9_barfig')
-    cards = { 't9_barfig' => testCard }
-    users = { 'abc123' => testUser }
-    votes = { 't9_barfig' => { 'abc123' => testUser } }
+    test_user = User.new('abc123')
+    test_card = Card.new('t9_barfig')
+    cards = { 't9_barfig' => test_card }
+    users = { 'abc123' => test_user }
+    votes = { 't9_barfig' => { 'abc123' => test_user } }
 
-    convoHash = LoadCsv::convos(users, cards, votes)
-    assert_equal(convoHash['t9_barfig'].cards, [testCard])
-    assert_equal(convoHash['t9_barfig'].users, [testUser])
+    convo_hash = LoadCsv.convos(users, cards, votes)
+    assert_equal(convo_hash['t9_barfig'].cards, [test_card])
+    assert_equal(convo_hash['t9_barfig'].users, [test_user])
   end
 
   def test_load_convos_only_includes_users_who_voted_on_card
-    testUserAbc = User.new('abc123')
-    testUserXyz = User.new('xyz456')
-    testCard1 = Card.new('t9_barfig')
-    testCard2 = Card.new('t9_bardtic')
-    cardsHash = { 't9_barfig' => testCard1, 't9_bardtic' => testCard2 }
-    usersHash = { 'abc123' => testUserAbc, 'xyz456' => testUserXyz }
-    votesHash = {
-      't9_barfig' => { 'abc123' => testUserAbc },
-      't9_bardtic' => { 'xyz456' => testUserXyz }
+    test_user_abc = User.new('abc123')
+    test_user_xyz = User.new('xyz456')
+    test_card1 = Card.new('t9_barfig')
+    test_card2 = Card.new('t9_bardtic')
+    cards_hash = { 't9_barfig' => test_card1, 't9_bardtic' => test_card2 }
+    users_hash = { 'abc123' => test_user_abc, 'xyz456' => test_user_xyz }
+    votes_hash = {
+      't9_barfig' => { 'abc123' => test_user_abc },
+      't9_bardtic' => { 'xyz456' => test_user_xyz }
     }
 
-    convoHash = LoadCsv::convos(usersHash, cardsHash, votesHash)
-    assert_equal(convoHash['t9_barfig'].users, [testUserAbc])
-    assert_equal(convoHash['t9_barfig'].cards, [testCard1])
-    assert_equal(convoHash['t9_bardtic'].users, [testUserXyz])
-    assert_equal(convoHash['t9_bardtic'].cards, [testCard2])
+    convo_hash = LoadCsv.convos(users_hash, cards_hash, votes_hash)
+    assert_equal(convo_hash['t9_barfig'].users, [test_user_abc])
+    assert_equal(convo_hash['t9_barfig'].cards, [test_card1])
+    assert_equal(convo_hash['t9_bardtic'].users, [test_user_xyz])
+    assert_equal(convo_hash['t9_bardtic'].cards, [test_card2])
   end
 
   def test_write_file
-    def CSV.open(filename, opts, &block)
+    def CSV.open(_filename, _opts, &block)
       block.call(@@mock_csv_file)
     end
     @@mock_csv_file = []
-    LoadCsv::write_to_file(['eins','zwei','drei'], 'delete_please.csv')
-    assert_equal(@@mock_csv_file, ['eins','zwei','drei'])
+    LoadCsv.write_to_file(%w[eins zwei drei], 'delete_please.csv')
+    assert_equal(@@mock_csv_file, %w[eins zwei drei])
   end
 end

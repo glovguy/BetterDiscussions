@@ -1,5 +1,5 @@
+# it understands a vote prediction that a user would have on a card
 class Recommendation
-  'it understands a vote prediction that a user would have on a card'
   attr_reader :attitude
   attr_reader :similarity_sum
   protected :attitude
@@ -18,8 +18,8 @@ class Recommendation
   end
 
   def weighted_prediction
-    return 0 if @similarity_sum == 0
-    @attitude / @similarity_sum #/
+    return 0 if @similarity_sum.zero?
+    @attitude / @similarity_sum # /
   end
 
   def likelihood_of(attitude)
