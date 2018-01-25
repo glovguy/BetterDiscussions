@@ -1,3 +1,5 @@
+# rubocop:disable Style/Documentation
+
 require 'minitest/autorun'
 require_relative './test_setup.rb'
 
@@ -163,17 +165,21 @@ class RecommendationTests < Minitest::Test
     assert_nil(ALICE.recommendation_for(USER_WITH_NO_VOTES, CARD1))
   end
 
-  def test_recommendation_likelihood_of_vote
+  def test_recommendation_likelihood_of_pos_attitude
     rec1 = Recommendation.new(Attitude.new(-1), 2)
-    rec2 = Recommendation.new(Attitude.new(0.75), 6)
     rec3 = Recommendation.new(Attitude.new(0.25), 6)
     pos_att = Attitude.new(1)
-    neg_att = Attitude.new(-1)
     assert_equal(rec1.likelihood_of(pos_att), 0.0)
+    assert_equal(rec3.likelihood_of(pos_att), 0.5)
+  end
+
+  def test_recommendation_likelihood_of_neg_attitude
+    rec1 = Recommendation.new(Attitude.new(-1), 2)
+    rec2 = Recommendation.new(Attitude.new(0.75), 6)
+    neg_att = Attitude.new(-1)
     assert_equal(rec1.likelihood_of(neg_att), 1.0)
     assert_equal(rec2.likelihood_of(neg_att), 0.5)
     assert_equal(rec2.likelihood_of(neg_att), 0.5)
-    assert_equal(rec3.likelihood_of(pos_att), 0.5)
   end
 end
 
@@ -218,6 +224,7 @@ class ConversationTests < Minitest::Test
     end
   end
 
+  # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
   def test_vote_entropy
     assert_equal(
       CONVO1.vote_entropy(ROBERT, Vote.new(CARD7, 1)),
@@ -244,6 +251,7 @@ class ConversationTests < Minitest::Test
       0.5090950592365232
     )
   end
+  # rubocop:enable Metrics/AbcSize,Metrics/MethodLength
 
   def test_vote_entropy_is_one_for_user_and_vote_without_recommendation
     assert_equal(CONVO1.vote_entropy(USER_WITH_NO_VOTES, Vote.new(CARD1, 1)), 1)
@@ -310,6 +318,7 @@ class LoadCsvTests < Minitest::Test
     assert_equal(convo_hash['t9_barfig'].users, [test_user])
   end
 
+  # rubocop:disable Metrics/MethodLength,Metrics/AbcSize
   def test_load_convos_only_includes_users_who_voted_on_card
     test_user_abc = User.new('abc123')
     test_user_xyz = User.new('xyz456')
@@ -328,7 +337,9 @@ class LoadCsvTests < Minitest::Test
     assert_equal(convo_hash['t9_bardtic'].users, [test_user_xyz])
     assert_equal(convo_hash['t9_bardtic'].cards, [test_card2])
   end
+  # rubocop:enable Metrics/MethodLength,Metrics/AbcSize
 
+  # rubocop:disable Lint/NestedMethodDefinition,Style/ClassVars
   def test_write_file
     def CSV.open(_filename, _opts, &block)
       block.call(@@mock_csv_file)
@@ -337,4 +348,7 @@ class LoadCsvTests < Minitest::Test
     LoadCsv.write_to_file(%w[eins zwei drei], 'delete_please.csv')
     assert_equal(@@mock_csv_file, %w[eins zwei drei])
   end
+  # rubocop:enable Lint/NestedMethodDefinition,Style/ClassVars
 end
+
+# rubocop:enable Style/Documentation
