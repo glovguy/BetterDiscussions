@@ -47,7 +47,7 @@ module LoadCsv
     progress = ProgressBar.new(rows.length) if verbose
     rows.each do |row|
       username, post_id, vote_value = row
-      card = cards.select { |c| c.body == post_id }.first
+      card = cards.detect { |c| c.body == post_id }
       next unless card
       vote = Vote.new(card, vote_value)
       users[username].add_vote(vote)
