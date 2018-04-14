@@ -1,10 +1,11 @@
 require 'csv'
 require 'progress_bar'
-require_relative '../app/user.rb'
-require_relative '../app/vote.rb'
-require_relative '../app/card.rb'
-require_relative '../app/conversation.rb'
+require_relative '../models/user.rb'
+require_relative '../models/vote.rb'
+require_relative '../models/card.rb'
+require_relative '../models/conversation.rb'
 
+# methods for loading data from csv
 module LoadCsv
   def self.write_to_file(data, filename)
     CSV.open(filename, 'w') do |csv|

@@ -4,12 +4,12 @@ require 'minitest/autorun'
 require_relative './test_setup.rb'
 
 require_relative '../app/similarity.rb'
-require_relative '../app/card.rb'
-require_relative '../app/vote.rb'
-require_relative '../app/recommendation.rb'
-require_relative '../app/user.rb'
-require_relative '../app/conversation.rb'
-require_relative '../scripts/load_csv.rb'
+require_relative '../app/models/card.rb'
+require_relative '../app/models/vote.rb'
+require_relative '../app/models/recommendation.rb'
+require_relative '../app/models/user.rb'
+require_relative '../app/models/conversation.rb'
+require_relative '../app/scripts/load_csv.rb'
 
 class CardTests < Minitest::Test
   def test_card_equality

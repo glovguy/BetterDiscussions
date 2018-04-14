@@ -1,9 +1,9 @@
 require_relative '../app/similarity.rb'
-require_relative '../app/card.rb'
-require_relative '../app/vote.rb'
-require_relative '../app/recommendation.rb'
-require_relative '../app/user.rb'
-require_relative '../app/conversation.rb'
+require_relative '../app/models/card.rb'
+require_relative '../app/models/vote.rb'
+require_relative '../app/models/recommendation.rb'
+require_relative '../app/models/user.rb'
+require_relative '../app/models/conversation.rb'
 
 CARD1 = Card.new('card1')
 CARD2 = Card.new('card2')
