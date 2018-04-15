@@ -1,11 +1,8 @@
 require_relative '../application_record.rb'
 # it understands a users reaction to a card
 class Vote < ApplicationRecord
-  # attr_reader :card
-  # attr_accessor :attitude
   belongs_to :card
   belongs_to :user
-  # belongs_to :attitude
 
   # def initialize(card, score)
   #   @card = card

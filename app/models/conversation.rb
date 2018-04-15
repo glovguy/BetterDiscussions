@@ -12,8 +12,6 @@ end
 
 # it understands a group of cards that are compared to each other
 class Conversation < ApplicationRecord
-  # attr_reader :users, :cards
-  has_many :users
   has_many :cards
 
   PRIOR = Recommendation.new(0, 1)
@@ -23,8 +21,12 @@ class Conversation < ApplicationRecord
   #   @cards = cards.flatten
   # end
 
+  def users # I'd like to tidy this up into something from active record
+    cards.map {|c| c.votes}.flatten.map {|v| v.user}.uniq
+  end
+
   def recommendation_for(user, card)
-    other_users = users.reject { |u| u == user || u.vote_for(card).nil? }
+    other_users = users
     other_users.inject(nil) do |sum, u|
       return sum if u.recommendation_for(user, card).nil?
       u.recommendation_for(user, card) + sum

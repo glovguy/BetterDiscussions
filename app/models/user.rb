@@ -25,7 +25,7 @@ class User < ApplicationRecord
   # end
 
   def cards_voted
-    votes.map(&:card)
+    Card.cards_for_user(self)
   end
 
   def vote_for(card)

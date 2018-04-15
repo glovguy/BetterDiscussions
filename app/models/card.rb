@@ -1,8 +1,13 @@
 require_relative '../application_record.rb'
 # it understands content that can be voted on
 class Card < ApplicationRecord
-  # attr_reader :body
   belongs_to :conversation
+  has_many :votes
+
+  def self.cards_for_user(user)
+    votes = user.votes
+    votes.map { |v| v.card }.uniq { |c| c.id }
+  end
 
   # def initialize(body)
   #   @body = body.to_s

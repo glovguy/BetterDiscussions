@@ -6,7 +6,6 @@ class Recommendation # < ApplicationRecord
   attr_reader :similarity_sum
   # protected :attitude
   # protected :similarity_sum
-  # has_one :attitude
 
   def initialize(attitude, similarity_sum)
     @attitude = attitude * similarity_sum

@@ -28,7 +28,7 @@ ActiveRecord::Schema.define do
   # end
   create_table :users, force: true do |t|
     t.string :username
-    t.references :conversation
+    # t.references :conversation
   end
   create_table :votes, force: true do |t|
     t.references :card

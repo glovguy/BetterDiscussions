@@ -57,77 +57,77 @@ class UserTests < Minitest::Test
   end
 end
 
-# class SimiliarityMetricTests < Minitest::Test
-#   def test_user_distance_equality
-#     assert_equal(
-#       Similarity::USER_DISTANCE.call(SUE, ROBERT),
-#       Similarity::USER_DISTANCE.call(ROBERT, SUE)
-#     )
-#   end
+class SimiliarityMetricTests < Minitest::Test
+  def test_user_distance_equality
+    assert_equal(
+      Similarity::USER_DISTANCE.call(SUE, ROBERT),
+      Similarity::USER_DISTANCE.call(ROBERT, SUE)
+    )
+  end
 
-#   def test_user_distance_greater_than
-#     assert(
-#       Similarity::USER_DISTANCE.call(SUE, ROBERT) >
-#         Similarity::USER_DISTANCE.call(JAN, ROBERT)
-#     )
-#   end
+  def test_user_distance_greater_than
+    assert(
+      Similarity::USER_DISTANCE.call(SUE, ROBERT) >
+        Similarity::USER_DISTANCE.call(JAN, ROBERT)
+    )
+  end
 
-#   def test_distance_range
-#     CONVO1.users.each do |user1|
-#       CONVO1.users.each do |user2|
-#         dist = Similarity::USER_DISTANCE.call(user1, user2)
-#         assert(dist >= 0.0)
-#         assert(dist <= 1.0)
-#       end
-#     end
-#   end
+  def test_distance_range
+    CONVO1.users.each do |user1|
+      CONVO1.users.each do |user2|
+        dist = Similarity::USER_DISTANCE.call(user1, user2)
+        assert(dist >= 0.0)
+        assert(dist <= 1.0)
+      end
+    end
+  end
 
-#   def test_distance_with_self
-#     assert_equal(Similarity::USER_DISTANCE.call(SUE, SUE), 1.0)
-#   end
+  def test_distance_with_self
+    assert_equal(Similarity::USER_DISTANCE.call(SUE, SUE), 1.0)
+  end
 
-#   def test_distance_totally_unrelated_user
-#     assert_equal(Similarity::USER_DISTANCE.call(ALICE, USER_WITH_NO_VOTES), 0.0)
-#   end
+  def test_distance_totally_unrelated_user
+    assert_equal(Similarity::USER_DISTANCE.call(ALICE, USER_WITH_NO_VOTES), 0.0)
+  end
 
-#   def test_user_distance_excluding
-#     assert(Similarity::USER_DISTANCE.call(ALICE, BOB) <
-#       Similarity::USER_DISTANCE.call(ALICE, BOB, [CARD2]))
-#     dist = Similarity::USER_DISTANCE.call(
-#       ALICE,
-#       BOB,
-#       [CARD1, CARD2, CARD3, CARD4]
-#     )
-#     assert_equal(dist, 0.0)
-#   end
+  def test_user_distance_excluding
+    assert(Similarity::USER_DISTANCE.call(ALICE, BOB) <
+      Similarity::USER_DISTANCE.call(ALICE, BOB, [CARD2]))
+    dist = Similarity::USER_DISTANCE.call(
+      ALICE,
+      BOB,
+      [CARD1, CARD2, CARD3, CARD4]
+    )
+    assert_equal(dist, 0.0)
+  end
 
-#   def test_pearson_score_range
-#     non_zero = false
-#     CONVO1.users.each do |user1|
-#       CONVO1.users.each do |user2|
-#         dist = Similarity::PEARSON_SCORE.call(user1, user2)
-#         assert(dist >= -1.0)
-#         assert(dist <= 1.0)
-#         non_zero = true unless dist.zero?
-#       end
-#     end
-#     assert(non_zero)
-#   end
+  def test_pearson_score_range
+    non_zero = false
+    CONVO1.users.each do |user1|
+      CONVO1.users.each do |user2|
+        dist = Similarity::PEARSON_SCORE.call(user1, user2)
+        assert(dist >= -1.0)
+        assert(dist <= 1.0)
+        non_zero = true unless dist.zero?
+      end
+    end
+    assert(non_zero)
+  end
 
-#   def test_pearson_score_commutitivity
-#     assert_equal(Similarity::USER_DISTANCE.call(PHIL, SUE),
-#                  Similarity::USER_DISTANCE.call(PHIL, SUE))
-#   end
+  def test_pearson_score_commutitivity
+    assert_equal(Similarity::USER_DISTANCE.call(PHIL, SUE),
+                 Similarity::USER_DISTANCE.call(PHIL, SUE))
+  end
 
-#   def test_pearson_score_excluding
-#     assert(Similarity::PEARSON_SCORE.call(SALLY, JAN) <
-#       Similarity::PEARSON_SCORE.call(SALLY, JAN, [CARD2, CARD4]))
-#     assert_equal(
-#       Similarity::PEARSON_SCORE.call(ALICE, BOB, [CARD1, CARD2, CARD3, CARD4]),
-#       0.0
-#     )
-#   end
-# end
+  def test_pearson_score_excluding
+    assert(Similarity::PEARSON_SCORE.call(SALLY, JAN) <
+      Similarity::PEARSON_SCORE.call(SALLY, JAN, [CARD2, CARD4]))
+    assert_equal(
+      Similarity::PEARSON_SCORE.call(ALICE, BOB, [CARD1, CARD2, CARD3, CARD4]),
+      0.0
+    )
+  end
+end
 
 # class VoteTests < Minitest::Test
 #   def test_vote_equality
