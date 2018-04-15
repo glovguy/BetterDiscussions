@@ -36,12 +36,6 @@ module Similarity
       (sum_sq2 - sum2**2 / common_cards.length)
     )
     return 0 if denom.zero?
-    unrounded_result = numer / denom
-    ROUND_TO_PLACE.call(unrounded_result, 5)
-  end
-
-  ROUND_TO_PLACE = lambda do |num, place|
-    rounding_factor = 10**place
-    (num * rounding_factor).round / rounding_factor
+    (numer / denom).round(5)
   end
 end
