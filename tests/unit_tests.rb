@@ -129,15 +129,15 @@ class SimiliarityMetricTests < Minitest::Test
   end
 end
 
-# class VoteTests < Minitest::Test
-#   def test_vote_equality
-#     assert_equal(Vote.new(card: CARD1, attitude: -1), Vote.new(card: CARD1, attitude: -1))
-#   end
+class VoteTests < Minitest::Test
+  def test_vote_equality
+    assert_equal(Vote.new(card: CARD1, attitude: -1), Vote.new(card: CARD1, attitude: -1))
+  end
 
-#   def test_vote_hash_equality
-#     assert_equal(Vote.new(card: CARD1, attitude: -1).hash, Vote.new(card: CARD1, attitude: -1).hash)
-#   end
-# end
+  def test_vote_hash_equality
+    assert_equal(Vote.new(card: CARD1, attitude: -1).hash, Vote.new(card: CARD1, attitude: -1).hash)
+  end
+end
 
 # class RecommendationTests < Minitest::Test
 #   def test_recommendation_adding
