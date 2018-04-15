@@ -1,32 +1,35 @@
+require_relative '../application_record.rb'
 # it understands someone who interacts with content
-class User
+class User < ApplicationRecord
   attr_reader :username
+  belongs_to :conversation
+  has_many :votes
 
   SIMILARITY_METRIC = Similarity::USER_DISTANCE
 
-  def initialize(username, *votes)
-    @username = username.to_s
-    @votes = votes
-  end
+  # def initialize(username, *votes)
+  #   @username = username.to_s
+  #   @votes = votes
+  # end
 
   def ==(other)
-    @username == other.username
+    username == other.username
   end
 
   def hash
-    @username.hash
+    username.hash
   end
 
-  def add_vote(vote)
-    @votes << vote
-  end
+  # def add_vote(vote)
+  #   @votes << vote
+  # end
 
   def cards_voted
-    @votes.map(&:card)
+    votes.map(&:card)
   end
 
   def vote_for(card)
-    @votes.find { |v| v.card == card }
+    votes.find { |v| v.card == card }
   end
 
   def similarity_with(other, exclude = [])
