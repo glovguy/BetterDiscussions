@@ -37,9 +37,9 @@ class User < ApplicationRecord
   end
 
   def recommendation_for(user, card)
-    return nil if common_cards_voted(user) == []
+    return nil unless common_cards_voted(user).include? card
     sim = similarity_with(user)
-    Recommendation.new(vote_for(card).attitude, sim)
+    Recommendation.new(vote_for(card).normalized_attitude, sim)
   end
 
   def common_cards_voted(other)

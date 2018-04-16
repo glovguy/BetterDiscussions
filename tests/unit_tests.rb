@@ -139,53 +139,57 @@ class VoteTests < Minitest::Test
   end
 end
 
-# class RecommendationTests < Minitest::Test
-#   def test_recommendation_adding
-#     rec1 = Recommendation.new(Attitude.new(0.6), 2)
-#     rec2 = Recommendation.new(Attitude.new(0.4), 4)
-#     combined_rec = rec1 + rec2
-#     assert_equal(
-#       combined_rec.weighted_prediction,
-#       0.5
-#     )
-#   end
+class RecommendationTests < Minitest::Test
+  def test_recommendation_adding
+    rec1 = Recommendation.new(1, 1)
+    rec2 = Recommendation.new(0, 1)
+    # binding.pry
+    combined_rec = rec1 + rec2
+    assert_equal(0.5, combined_rec.weighted_prediction)
+  end
 
-#   def test_recommendations
-#     rec1 = Recommendation.new(Attitude.new(1.0), 1.0)
-#     rec2 = Recommendation.new(Attitude.new(0.5), 6.0)
-#     assert_equal(rec1.weighted_prediction, 1.0)
-#     assert_equal(rec2.weighted_prediction, 0.5)
-#   end
+  def test_adding_differently_weighted_recommendations
+    rec1 = Recommendation.new(0.6, 4)
+    rec2 = Recommendation.new(0.3, 2)
+    combined_rec = rec1 + rec2
+    assert_equal(0.5, combined_rec.weighted_prediction)
+  end
 
-#   def test_recommendations_range
-#     recs = CONVO1.cards.map { |c| CONVO1.recommendation_for(PHIL, c) }
-#     recs.reject(&:nil?).each do |rec|
-#       assert(rec.weighted_prediction >= 0)
-#       assert(rec.weighted_prediction <= 1)
-#     end
-#   end
+  def test_recommendations
+    rec1 = Recommendation.new(1.0, 1.0)
+    rec2 = Recommendation.new(0.5, 6.0)
+    assert_equal(1.0, rec1.weighted_prediction)
+    assert_equal(0.5, rec2.weighted_prediction)
+  end
 
-#   def test_recommendation_for_totally_unrelated_user
-#     assert_nil(ALICE.recommendation_for(USER_WITH_NO_VOTES, CARD1))
-#   end
+  def test_recommendations_range
+    recs = CONVO1.cards.map { |c| CONVO1.recommendation_for(PHIL, c) }
+    recs.reject(&:nil?).each do |rec|
+      assert(rec.weighted_prediction >= 0)
+      assert(rec.weighted_prediction <= 1)
+    end
+  end
 
-#   def test_recommendation_likelihood_of_pos_attitude
-#     rec1 = Recommendation.new(Attitude.new(-1), 2)
-#     rec3 = Recommendation.new(Attitude.new(0.25), 6)
-#     pos_att = Attitude.new(1)
-#     assert_equal(rec1.likelihood_of(pos_att), 0.0)
-#     assert_equal(rec3.likelihood_of(pos_att), 0.5)
-#   end
+  def test_recommendation_for_totally_unrelated_user
+    assert_nil(ALICE.recommendation_for(USER_WITH_NO_VOTES, CARD1))
+  end
 
-#   def test_recommendation_likelihood_of_neg_attitude
-#     rec1 = Recommendation.new(Attitude.new(-1), 2)
-#     rec2 = Recommendation.new(Attitude.new(0.75), 6)
-#     neg_att = Attitude.new(-1)
-#     assert_equal(rec1.likelihood_of(neg_att), 1.0)
-#     assert_equal(rec2.likelihood_of(neg_att), 0.5)
-#     assert_equal(rec2.likelihood_of(neg_att), 0.5)
-#   end
-# end
+  def test_recommendation_likelihood_of_pos_attitude
+    rec1 = Recommendation.new(0, 2)
+    rec2 = Recommendation.new(0.5, 6)
+    pos_att = 1
+    assert_equal(0.0, rec1.likelihood_of(pos_att))
+    assert_equal(0.5, rec2.likelihood_of(pos_att))
+  end
+
+  def test_recommendation_likelihood_of_neg_attitude
+    rec1 = Recommendation.new(0, 2)
+    rec2 = Recommendation.new(0.5, 6)
+    neg_att = 0
+    assert_equal(rec1.likelihood_of(neg_att), 1.0)
+    assert_equal(rec2.likelihood_of(neg_att), 0.5)
+  end
+end
 
 # class ConversationTests < Minitest::Test
 #   def test_recommendation_for

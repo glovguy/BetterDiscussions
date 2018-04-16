@@ -1,7 +1,7 @@
 require_relative '../app/similarity.rb'
 require_relative '../app/models/card.rb'
 require_relative '../app/models/vote.rb'
-require_relative '../app/models/recommendation.rb'
+# require_relative '../app/models/recommendation.rb'
 require_relative '../app/models/user.rb'
 require_relative '../app/models/conversation.rb'
 
