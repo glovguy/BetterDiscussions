@@ -36,6 +36,6 @@ module Similarity
       (sum_sq2 - sum2**2 / common_cards.length)
     )
     return 0 if denom.zero?
-    (numer / denom).round(5)
+    (numer.to_f / denom)
   end
 end

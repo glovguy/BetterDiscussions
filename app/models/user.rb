@@ -1,7 +1,7 @@
 require_relative '../application_record.rb'
 # it understands someone who interacts with content
 class User < ApplicationRecord
-  attr_reader :username
+  # attr_reader :username
   belongs_to :conversation
   has_many :votes
 
@@ -20,10 +20,6 @@ class User < ApplicationRecord
     username.hash
   end
 
-  # def add_vote(vote)
-  #   @votes << vote
-  # end
-
   def cards_voted
     Card.cards_for_user(self)
   end
@@ -37,7 +33,7 @@ class User < ApplicationRecord
   end
 
   def recommendation_for(user, card)
-    return nil unless common_cards_voted(user).include? card
+    return nil if common_cards_voted(user) == []
     sim = similarity_with(user)
     Recommendation.new(vote_for(card).normalized_attitude, sim)
   end

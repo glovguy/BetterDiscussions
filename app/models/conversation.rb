@@ -26,16 +26,17 @@ class Conversation < ApplicationRecord
   end
 
   def recommendation_for(user, card)
-    other_users = users
+    other_users = users.reject {|u| u.vote_for(card).nil?} - [user]
     other_users.inject(nil) do |sum, u|
-      return sum if u.recommendation_for(user, card).nil?
-      u.recommendation_for(user, card) + sum
+      rec = u.recommendation_for(user, card)
+      return sum if rec.nil?
+      rec + sum
     end
   end
 
   def vote_entropy(user, vote)
     recommendation = recommendation_for(user, vote.card)
     return 1 unless recommendation
-    ENTROPY.call(recommendation.likelihood_of(vote.attitude))
+    ENTROPY.call(recommendation.likelihood_of(vote.attitude)).to_f
   end
 end

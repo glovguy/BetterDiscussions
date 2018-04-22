@@ -143,7 +143,6 @@ class RecommendationTests < Minitest::Test
   def test_recommendation_adding
     rec1 = Recommendation.new(1, 1)
     rec2 = Recommendation.new(0, 1)
-    # binding.pry
     combined_rec = rec1 + rec2
     assert_equal(0.5, combined_rec.weighted_prediction)
   end
@@ -191,80 +190,80 @@ class RecommendationTests < Minitest::Test
   end
 end
 
-# class ConversationTests < Minitest::Test
-#   def test_recommendation_for
-#     assert(CONVO1.recommendation_for(SUE, CARD5).weighted_prediction < 0.5)
-#     assert(CONVO1.recommendation_for(SUE, CARD6).weighted_prediction > 0.5)
-#     assert(CONVO1.recommendation_for(SUE, CARD7).weighted_prediction < 0.5)
-#     assert_equal(CONVO1.recommendation_for(SUE, CARD8).weighted_prediction, 1)
-#   end
+class ConversationTests < Minitest::Test
+  def test_recommendation_for
+    assert(CONVO1.recommendation_for(SUE, CARD5).weighted_prediction < 0.5)
+    assert(CONVO1.recommendation_for(SUE, CARD6).weighted_prediction > 0.5)
+    assert(CONVO1.recommendation_for(SUE, CARD7).weighted_prediction < 0.5)
+    assert_equal(CONVO1.recommendation_for(SUE, CARD8).weighted_prediction, 1)
+  end
 
-#   def test_card_recommendation_range
-#     CONVO1.users.each do |u|
-#       assert(CONVO1.recommendation_for(u, CARD1).weighted_prediction >= -1)
-#       assert(CONVO1.recommendation_for(u, CARD1).weighted_prediction <= 1)
-#     end
-#   end
+  def test_card_recommendation_range
+    CONVO1.users.each do |u|
+      assert(CONVO1.recommendation_for(u, CARD1).weighted_prediction >= -1)
+      assert(CONVO1.recommendation_for(u, CARD1).weighted_prediction <= 1)
+    end
+  end
 
-#   def test_card_without_votes_returns_nil
-#     assert_nil(CONVO1.recommendation_for(ROBERT, CARD_NO_ONE_HAS_VOTED_ON))
-#   end
+  def test_card_without_votes_returns_nil
+    assert_nil(CONVO1.recommendation_for(ROBERT, CARD_NO_ONE_HAS_VOTED_ON))
+  end
 
-#   def test_card_user_has_voted_on_is_given_recommendation
-#     assert_equal(
-#       CONVO1.recommendation_for(ROBERT, CARD1).weighted_prediction,
-#       0.5224077499274828
-#     )
-#   end
+  def test_card_user_has_voted_on_is_given_recommendation
+    assert_equal(
+      0.4913338099395003,
+      CONVO1.recommendation_for(ROBERT, CARD1).weighted_prediction
+    )
+  end
 
-#   def test_user_with_no_votes_is_given_nil_recommendation
-#     assert_nil(CONVO1.recommendation_for(USER_WITH_NO_VOTES, CARD1))
-#   end
+  def test_user_with_no_votes_is_given_nil_recommendation
+    assert_nil(CONVO1.recommendation_for(USER_WITH_NO_VOTES, CARD1))
+  end
 
-#   def test_entropy_lambda
-#     assert_equal(ENTROPY.call(0.9), 0.13680278410054497)
-#   end
+  def test_entropy_lambda
+    assert_equal(ENTROPY.call(0.9), 0.13680278410054497)
+  end
 
-#   def test_entropy_range
-#     (1..10).to_a.each do |i|
-#       assert(ENTROPY.call(0.1 * i) <= 1.0)
-#       assert(ENTROPY.call(0.1 * i) >= 0.0)
-#     end
-#   end
+  def test_entropy_range
+    (1..10).to_a.each do |i|
+      assert(ENTROPY.call(0.1 * i) <= 1.0)
+      assert(ENTROPY.call(0.1 * i) >= 0.0)
+    end
+  end
 
-#   # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
-#   def test_vote_entropy
-#     assert_equal(
-#       CONVO1.vote_entropy(ROBERT, Vote.new(card: CARD7, attitude: 1)),
-#       0.5174903359987708
-#     )
-#     assert_equal(
-#       CONVO1.vote_entropy(JAN, Vote.new(card: CARD9, attitude: 1)),
-#       0.5
-#     )
-#     assert_equal(
-#       CONVO1.vote_entropy(PHIL, Vote.new(card: CARD9, attitude: 1)),
-#       0.5188759492631944
-#     )
-#     assert_equal(
-#       CONVO1.vote_entropy(SALLY, Vote.new(card: CARD7, attitude: 1)),
-#       0.5122656108674634
-#     )
-#     assert_equal(
-#       CONVO1.vote_entropy(SALLY, Vote.new(card: CARD7, attitude: -1)),
-#       0.48498113460066844
-#     )
-#     assert_equal(
-#       CONVO1.vote_entropy(SUE, Vote.new(card: CARD7, attitude: 1)),
-#       0.5090950592365232
-#     )
-#   end
-#   # rubocop:enable Metrics/AbcSize,Metrics/MethodLength
+  # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
+  def test_vote_entropy
+    assert_equal(
+      0.5174903359987708,
+      CONVO1.vote_entropy(ROBERT, Vote.new(card: CARD7, attitude: 1))
+    )
+    assert_equal(
+      0.5,
+      CONVO1.vote_entropy(JAN, Vote.new(card: CARD9, attitude: 1))
+    )
+    assert_equal(
+      0.5188759492631944,
+      CONVO1.vote_entropy(PHIL, Vote.new(card: CARD9, attitude: 1))
+    )
+    assert_equal(
+      0.5122656108674633,
+      CONVO1.vote_entropy(SALLY, Vote.new(card: CARD7, attitude: 1))
+    )
+    assert_equal(
+      0.48498113460066844,
+      CONVO1.vote_entropy(SALLY, Vote.new(card: CARD7, attitude: 0))
+    )
+    assert_equal(
+      0.5090950592365232,
+      CONVO1.vote_entropy(SUE, Vote.new(card: CARD7, attitude: 1))
+    )
+  end
+  # rubocop:enable Metrics/AbcSize,Metrics/MethodLength
 
-#   def test_vote_entropy_is_one_for_user_and_vote_without_recommendation
-#     assert_equal(CONVO1.vote_entropy(USER_WITH_NO_VOTES, Vote.new(card: CARD1, attitude: 1)), 1)
-#   end
-# end
+  def test_vote_entropy_is_one_for_user_and_vote_without_recommendation
+    assert_equal(CONVO1.vote_entropy(USER_WITH_NO_VOTES, Vote.new(card: CARD1, attitude: 1)), 1)
+  end
+end
 
 # class LoadCsvTests < Minitest::Test
 #   def test_load_users
