@@ -3,7 +3,9 @@ module Similarity
     common_cards = user1.common_cards_voted(user2) - exclude
     return 0 if common_cards == []
     total = common_cards.inject(0) do |sum, card|
-      (user1.vote_for(card).to_f - user2.vote_for(card).to_f)**2 + sum
+      norm_diff = user1.vote_for(card).normalized_attitude -
+                  user2.vote_for(card).normalized_attitude
+      sum + norm_diff.to_f**2
     end
     1.0 / (Math.sqrt(total) + 1)
   end
@@ -13,21 +15,22 @@ module Similarity
     return 0 if common_cards == []
 
     sum1 = common_cards.inject(0) do |sum, card|
-      sum + user1.vote_for(card).to_f
-    end
+      sum + user1.vote_for(card).normalized_attitude
+    end.to_f
     sum2 = common_cards.inject(0) do |sum, card|
-      sum + user2.vote_for(card).to_f
-    end
+      sum + user2.vote_for(card).normalized_attitude
+    end.to_f
 
     sum_sq1 = common_cards.inject(0) do |sum, card|
-      sum + user1.vote_for(card).to_f**2
+      sum + user1.vote_for(card).normalized_attitude**2
     end
     sum_sq2 = common_cards.inject(0) do |sum, card|
-      sum + user2.vote_for(card).to_f**2
+      sum + user2.vote_for(card).normalized_attitude**2
     end
 
     p_sum = common_cards.inject(0) do |sum, card|
-      sum + (user1.vote_for(card).to_f * user2.vote_for(card).to_f)
+      sum + (user1.vote_for(card).normalized_attitude *
+        user2.vote_for(card).normalized_attitude)
     end
 
     numer = p_sum - (sum1 * sum2 / common_cards.length)

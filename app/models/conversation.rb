@@ -13,20 +13,17 @@ end
 # it understands a group of cards that are compared to each other
 class Conversation < ApplicationRecord
   has_many :cards
+  has_many :users, through: :cards
 
   PRIOR = Recommendation.new(0, 1)
 
-  # def initialize(users = [], *cards)
-  #   @users = users
-  #   @cards = cards.flatten
-  # end
-
-  def users # I'd like to tidy this up into something from active record
-    cards.map {|c| c.votes}.flatten.map {|v| v.user}.uniq
+  # Faster than active record association
+  def users
+    cards.map(&:votes).flatten.map(&:user)
   end
 
   def recommendation_for(user, card)
-    other_users = users.reject {|u| u.vote_for(card).nil?} - [user]
+    other_users = users.reject { |u| u.vote_for(card).nil? }.uniq - [user]
     other_users.inject(nil) do |sum, u|
       rec = u.recommendation_for(user, card)
       return sum if rec.nil?

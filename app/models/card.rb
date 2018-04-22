@@ -3,15 +3,7 @@ require_relative '../application_record.rb'
 class Card < ApplicationRecord
   belongs_to :conversation
   has_many :votes
-
-  def self.cards_for_user(user)
-    votes = user.votes
-    votes.map { |v| v.card }.uniq { |c| c.id }
-  end
-
-  # def initialize(body)
-  #   @body = body.to_s
-  # end
+  has_one :user, through: :votes
 
   def ==(other)
     body == other.body

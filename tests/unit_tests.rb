@@ -1,5 +1,4 @@
 # rubocop:disable Style/Documentation
-
 require 'minitest/autorun'
 require 'pry'
 require_relative '../app/scripts/init_db.rb'
@@ -30,18 +29,21 @@ class UserTests < Minitest::Test
   end
 
   def test_user_hash_equality
-    assert_equal(User.new(username: 'bane').hash, User.new(username: 'bane').hash)
+    assert_equal(
+      User.new(username: 'bane').hash,
+      User.new(username: 'bane').hash
+    )
   end
 
   def test_user_can_have_vote
     card1 = Card.create(body: Object.new)
     vote1 = Vote.create(card: card1, attitude: 0)
     user1 = User.create(username: 'test')
-    assert_equal(false, user1.cards_voted.include?(card1))
+    assert_equal(false, user1.cards.include?(card1))
     vote1.user = user1
     vote1.save
     user1.reload
-    assert(user1.cards_voted.include?(card1))
+    assert(user1.cards.include?(card1))
   end
 
   def test_user_similarity_equality
@@ -53,7 +55,7 @@ class UserTests < Minitest::Test
 
   def test_user_similarity_excluding
     assert(ALICE.similarity_with(BOB) <
-      ALICE.similarity_with(BOB, exclude=[CARD2]))
+      ALICE.similarity_with(BOB, exclude: [CARD2]))
   end
 end
 
@@ -131,11 +133,17 @@ end
 
 class VoteTests < Minitest::Test
   def test_vote_equality
-    assert_equal(Vote.new(card: CARD1, attitude: -1), Vote.new(card: CARD1, attitude: -1))
+    assert_equal(
+      Vote.new(card: CARD1, attitude: -1),
+      Vote.new(card: CARD1, attitude: -1)
+    )
   end
 
   def test_vote_hash_equality
-    assert_equal(Vote.new(card: CARD1, attitude: -1).hash, Vote.new(card: CARD1, attitude: -1).hash)
+    assert_equal(
+      Vote.new(card: CARD1, attitude: -1).hash,
+      Vote.new(card: CARD1, attitude: -1).hash
+    )
   end
 end
 
@@ -261,7 +269,11 @@ class ConversationTests < Minitest::Test
   # rubocop:enable Metrics/AbcSize,Metrics/MethodLength
 
   def test_vote_entropy_is_one_for_user_and_vote_without_recommendation
-    assert_equal(CONVO1.vote_entropy(USER_WITH_NO_VOTES, Vote.new(card: CARD1, attitude: 1)), 1)
+    vote_on_card1 = Vote.new(card: CARD1, attitude: 1)
+    assert_equal(
+      CONVO1.vote_entropy(USER_WITH_NO_VOTES, vote_on_card1),
+      1
+    )
   end
 end
 
@@ -324,8 +336,6 @@ end
 #     assert_equal(convo_hash['t9_barfig'].cards, [test_card])
 #     assert_equal(convo_hash['t9_barfig'].users, [test_user])
 #   end
-
-#   # rubocop:disable Metrics/MethodLength,Metrics/AbcSize
 #   def test_load_convos_only_includes_users_who_voted_on_card
 #     test_user_abc = User.new(username: 'abc123')
 #     test_user_xyz = User.new(username: 'xyz456')
@@ -345,8 +355,6 @@ end
 #     assert_equal(convo_hash['t9_bardtic'].cards, [test_card2])
 #   end
 #   # rubocop:enable Metrics/MethodLength,Metrics/AbcSize
-
-#   # rubocop:disable Lint/NestedMethodDefinition,Style/ClassVars
 #   def test_write_file
 #     def CSV.open(_filename, _opts, &block)
 #       block.call(@@mock_csv_file)

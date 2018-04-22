@@ -4,11 +4,6 @@ class Vote < ApplicationRecord
   belongs_to :card
   belongs_to :user
 
-  # def initialize(card, score)
-  #   @card = card
-  #   @attitude = Attitude.new(score)
-  # end
-
   def ==(other)
     card == other.card && attitude == other.attitude
   end
@@ -17,11 +12,7 @@ class Vote < ApplicationRecord
     [card, attitude].hash
   end
 
-  def to_f
-    normalized_attitude
-  end
-
   def normalized_attitude
-    (attitude + 1) / 2.0
+    (attitude + 1).to_f / 2.0
   end
 end
