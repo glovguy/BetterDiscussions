@@ -27,95 +27,36 @@ module LoadCsv
 
   def self.users(rows, verbose = false)
     puts 'Initializing users...' if verbose
-    users = {}
-    progress = ProgressBar.new(rows.length) if verbose
-    rows.each do |row|
-      username, _post_id, _vote_value = row
-      users[username] = User.new(username)
+    usernames = rows.map(&:first)
+    progress = ProgressBar.new(usernames.length) if verbose
+    usernames.uniq.map do |un|
+      User.create(username: un)
       progress.increment! if verbose
     end
-    puts "Users loaded. There are #{users.length} users." if verbose
-    users
-  end
-
-  def self.users_who_voted_on_cards(rows, cards, verbose = false)
-    puts 'Initializing users who voted on those cards...' if verbose
-    users = {}
-    users.default_proc = proc do |hash, key|
-      hash[key] = User.new(key)
-    end
-    progress = ProgressBar.new(rows.length) if verbose
-    rows.each do |row|
-      username, post_id, vote_value = row
-      card = cards.detect { |c| c.body == post_id }
-      next unless card
-      vote = Vote.new(card, vote_value)
-      users[username].add_vote(vote)
-      progress.increment! if verbose
-    end
-    puts "Users loaded. There are #{users.length} users." if verbose
-    users.values
+    puts "Users loaded. There are #{User.count} users." if verbose
   end
 
   def self.cards(rows, verbose = false)
     puts 'Initializing cards...' if verbose
-    cards = {}
-    progress = ProgressBar.new(rows.length) if verbose
-    rows.each do |row|
-      _username, post_id, _vote_value = row
-      card = Card.new(post_id)
-      cards[post_id] = card
+    post_ids = rows.map(&:second).uniq
+    progress = ProgressBar.new(post_ids.length) if verbose
+    post_ids.each do |body|
+      Card.create(body: body)
       progress.increment! if verbose
     end
-    puts "Cards loaded. There are #{cards.length} cards." if verbose
-    cards
+    puts "Cards loaded. There are #{Card.count} cards." if verbose
   end
 
-  def self.cards_with_more_than_one_vote(rows, verbose = false)
-    puts 'Initializing cards with more than one vote...' if verbose
-    cards_seen = {}.tap { |h| h.default = 0 }
-    progress = ProgressBar.new(rows.length) if verbose
-    rows.each do |row|
-      _username, post_id, _vote_value = row
-      cards_seen[post_id] += 1
-      progress.increment! if verbose
-    end
-    cards_seen.select! { |_post_id, count| count > 1 }
-    puts "Cards loaded. There are #{cards.length} cards." if verbose
-    cards_seen.keys.map { |post_id| Card.new(post_id) }
-  end
-
-  def self.votes(rows, users, cards, verbose = false)
+  def self.votes(rows, verbose = false)
     puts 'Initializing votes...' if verbose
     progress = ProgressBar.new(rows.length) if verbose
-    votes = {}
     rows.each do |row|
       username, post_id, vote_value = row
-      user = users[username]
-      card = cards[post_id]
-      vote = Vote.new(card, vote_value)
-      user.add_vote(vote)
-      votes[post_id] ||= {}
-      votes[post_id][username] = vote
+      user = User.where(username: username).take
+      card = Card.where(body: post_id).take
+      Vote.create(user: user, card: card, attitude: vote_value)
       progress.increment! if verbose
     end
     puts "Votes loaded. There are #{votes.length} votes." if verbose
-    votes
-  end
-
-  def self.convos(users, cards, votes, verbose = false)
-    puts 'Initializing convos...' if verbose
-    progress = ProgressBar.new(cards.length) if verbose
-    convos = {}
-    cards.each_value do |card|
-      usernames_on_card = votes[card.body].keys
-      users_on_card = users.values.select do |user|
-        usernames_on_card.include?(user.username)
-      end
-      convos[card.body] = Conversation.new(users_on_card, card)
-      progress.increment! if verbose
-    end
-    puts "Convos loaded. There are #{convos.length} convos." if verbose
-    convos
   end
 end

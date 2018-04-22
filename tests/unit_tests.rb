@@ -44,6 +44,7 @@ class UserTests < Minitest::Test
     vote1.save
     user1.reload
     assert(user1.cards.include?(card1))
+    user1.delete
   end
 
   def test_user_similarity_equality
@@ -75,8 +76,8 @@ class SimiliarityMetricTests < Minitest::Test
   end
 
   def test_distance_range
-    CONVO1.users.each do |user1|
-      CONVO1.users.each do |user2|
+    User.all.each do |user1|
+      User.all.each do |user2|
         dist = Similarity::USER_DISTANCE.call(user1, user2)
         assert(dist >= 0.0)
         assert(dist <= 1.0)
@@ -105,8 +106,8 @@ class SimiliarityMetricTests < Minitest::Test
 
   def test_pearson_score_range
     non_zero = false
-    CONVO1.users.each do |user1|
-      CONVO1.users.each do |user2|
+    User.all.each do |user1|
+      User.all.each do |user2|
         dist = Similarity::PEARSON_SCORE.call(user1, user2)
         assert(dist >= -1.0)
         assert(dist <= 1.0)
@@ -170,7 +171,7 @@ class RecommendationTests < Minitest::Test
   end
 
   def test_recommendations_range
-    recs = CONVO1.cards.map { |c| CONVO1.recommendation_for(PHIL, c) }
+    recs = Card.all.map { |c| CONVO1.recommendation_for(PHIL, c) }
     recs.reject(&:nil?).each do |rec|
       assert(rec.weighted_prediction >= 0)
       assert(rec.weighted_prediction <= 1)
@@ -207,8 +208,8 @@ class ConversationTests < Minitest::Test
   end
 
   def test_card_recommendation_range
-    CONVO1.users.each do |u|
-      assert(CONVO1.recommendation_for(u, CARD1).weighted_prediction >= -1)
+    CARD1.users.each do |u|
+      assert(CONVO1.recommendation_for(u, CARD1).weighted_prediction >= 0)
       assert(CONVO1.recommendation_for(u, CARD1).weighted_prediction <= 1)
     end
   end
@@ -277,93 +278,41 @@ class ConversationTests < Minitest::Test
   end
 end
 
-# class LoadCsvTests < Minitest::Test
-#   def test_load_users
-#     test_row = [%w[abc123 t9_barfig 1]]
-#     comparison_hash = { 'abc123' => User.new(username: 'abc123') }
+class LoadCsvTests < Minitest::Test
+  def test_load_users
+    test_row = [%w[abc123 t9_barfig 1]]
+    assert_nil(User.where(username: 'abc123').take)
+    LoadCsv.users(test_row)
+    test_user = User.where(username: 'abc123').take
+    assert_equal(test_user, User.new(username: 'abc123'))
+    test_user.delete
+  end
 
-#     users_hash = LoadCsv.users(test_row)
-#     assert_equal(users_hash.keys, comparison_hash.keys)
-#     assert_equal(users_hash.values, comparison_hash.values)
-#   end
+  def test_load_cards
+    test_row = [%w[abc123 t9_barfig 1]]
+    assert_nil(Card.where(body: 't9_barfig').take)
+    LoadCsv.cards(test_row)
+    assert_equal(Card.where(body: 't9_barfig').take, Card.new(body: 't9_barfig'))
+  end
 
-#   def test_users_who_voted_on_cards
-#     cards = [Card.new(body: 't9_barfig')]
-#     users = LoadCsv.users_who_voted_on_cards(TEST_CSV_ROWS, cards)
-#     comparison = [User.new(username: 'abc123'), User.new(username: 'blogmonster')]
-#     assert_equal(users, comparison)
-#   end
+  def test_load_votes
+    test_row = [%w[abc123 t9_barfig 1]]
+    test_user = User.where(username: 'abc123').take
+    test_card = Card.where(body: 't9_barfig').take
+    assert_nil(Vote.where(user: test_user, card: test_card).take)
+    LoadCsv.votes(test_row)
+    new_vote = Vote.where(user: test_user, card: test_card).take
+    assert_equal(new_vote.attitude, 1)
+  end
 
-#   def test_load_cards
-#     test_row = [%w[abc123 t9_barfig 1]]
-#     comparison_hash = { 't9_barfig' => Card.new(body: 't9_barfig') }
-
-#     cards_hash = LoadCsv.cards(test_row)
-#     assert(cards_hash.keys.eql?(comparison_hash.keys))
-#     assert_equal(cards_hash.values, comparison_hash.values)
-#   end
-
-#   def test_load_cards_with_more_than_one_vote
-#     cards = LoadCsv.cards_with_more_than_one_vote(TEST_CSV_ROWS)
-#     expected = [
-#       Card.new(body: 't9_barfig'),
-#       Card.new(body: 't9_barfpu'),
-#       Card.new(body: 't9_binsop')
-#     ]
-#     assert_equal(expected, cards)
-#   end
-
-#   def test_load_votes
-#     test_row = [%w[abc123 t9_barfig 1]]
-#     test_user = User.new(username: 'abc123')
-#     test_card = Card.new(body: 't9_barfig')
-#     cards = { 't9_barfig' => test_card }
-#     users = { 'abc123' => test_user }
-
-#     votes_hash = LoadCsv.votes(test_row, users, cards)
-#     assert(test_user.vote_for(test_card), Vote.new(card: test_card, attitude: '1'))
-#     assert_equal(votes_hash['t9_barfig']['abc123'], Vote.new(card: test_card, attitude: '1'))
-#   end
-
-#   def test_load_convos
-#     test_user = User.new(username: 'abc123')
-#     test_card = Card.new(body: 't9_barfig')
-#     cards = { 't9_barfig' => test_card }
-#     users = { 'abc123' => test_user }
-#     votes = { 't9_barfig' => { 'abc123' => test_user } }
-
-#     convo_hash = LoadCsv.convos(users, cards, votes)
-#     assert_equal(convo_hash['t9_barfig'].cards, [test_card])
-#     assert_equal(convo_hash['t9_barfig'].users, [test_user])
-#   end
-#   def test_load_convos_only_includes_users_who_voted_on_card
-#     test_user_abc = User.new(username: 'abc123')
-#     test_user_xyz = User.new(username: 'xyz456')
-#     test_card1 = Card.new(body: 't9_barfig')
-#     test_card2 = Card.new(body: 't9_bardtic')
-#     cards_hash = { 't9_barfig' => test_card1, 't9_bardtic' => test_card2 }
-#     users_hash = { 'abc123' => test_user_abc, 'xyz456' => test_user_xyz }
-#     votes_hash = {
-#       't9_barfig' => { 'abc123' => test_user_abc },
-#       't9_bardtic' => { 'xyz456' => test_user_xyz }
-#     }
-
-#     convo_hash = LoadCsv.convos(users_hash, cards_hash, votes_hash)
-#     assert_equal(convo_hash['t9_barfig'].users, [test_user_abc])
-#     assert_equal(convo_hash['t9_barfig'].cards, [test_card1])
-#     assert_equal(convo_hash['t9_bardtic'].users, [test_user_xyz])
-#     assert_equal(convo_hash['t9_bardtic'].cards, [test_card2])
-#   end
-#   # rubocop:enable Metrics/MethodLength,Metrics/AbcSize
-#   def test_write_file
-#     def CSV.open(_filename, _opts, &block)
-#       block.call(@@mock_csv_file)
-#     end
-#     @@mock_csv_file = []
-#     LoadCsv.write_to_file(%w[eins zwei drei], 'delete_please.csv')
-#     assert_equal(@@mock_csv_file, %w[eins zwei drei])
-#   end
-#   # rubocop:enable Lint/NestedMethodDefinition,Style/ClassVars
-# end
+  def test_write_file
+    def CSV.open(_filename, _opts, &block)
+      block.call(@@mock_csv_file)
+    end
+    @@mock_csv_file = []
+    LoadCsv.write_to_file(%w[eins zwei drei], 'delete_please.csv')
+    assert_equal(@@mock_csv_file, %w[eins zwei drei])
+  end
+end
 
 # rubocop:enable Style/Documentation

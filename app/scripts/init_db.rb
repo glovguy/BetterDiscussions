@@ -9,10 +9,6 @@ ActiveRecord::Base.establish_connection(
 ActiveRecord::Schema.define do
   create_table :cards, force: true do |t|
     t.string :body
-    t.references :conversation
-  end
-  create_table :conversations, force: true do |t|
-    t.string :name
   end
   create_table :users, force: true do |t|
     t.string :username

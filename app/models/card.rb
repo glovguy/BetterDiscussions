@@ -3,7 +3,7 @@ require_relative '../application_record.rb'
 class Card < ApplicationRecord
   belongs_to :conversation
   has_many :votes
-  has_one :user, through: :votes
+  has_many :users, through: :votes
 
   def ==(other)
     body == other.body

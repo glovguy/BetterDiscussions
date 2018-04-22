@@ -4,20 +4,19 @@ require_relative '../app/models/vote.rb'
 require_relative '../app/models/user.rb'
 require_relative '../app/models/conversation.rb'
 
-CONVO1 = Conversation.create
+CONVO1 = Conversation
 
-CARD1 = Card.create(body: 'card1', conversation: CONVO1)
-CARD2 = Card.create(body: 'card2', conversation: CONVO1)
-CARD3 = Card.create(body: 'card3', conversation: CONVO1)
-CARD4 = Card.create(body: 'card4', conversation: CONVO1)
-CARD5 = Card.create(body: 'card5', conversation: CONVO1)
-CARD6 = Card.create(body: 'card6', conversation: CONVO1)
-CARD7 = Card.create(body: 'card7', conversation: CONVO1)
-CARD8 = Card.create(body: 'card8', conversation: CONVO1)
-CARD9 = Card.create(body: 'card9', conversation: CONVO1)
-CARD10 = Card.create(body: 'card10', conversation: CONVO1)
-CARD_NO_ONE_HAS_VOTED_ON = Card.create(body: 'no one has voted on this one',
-                                       conversation: CONVO1)
+CARD1 = Card.create(body: 'card1')
+CARD2 = Card.create(body: 'card2')
+CARD3 = Card.create(body: 'card3')
+CARD4 = Card.create(body: 'card4')
+CARD5 = Card.create(body: 'card5')
+CARD6 = Card.create(body: 'card6')
+CARD7 = Card.create(body: 'card7')
+CARD8 = Card.create(body: 'card8')
+CARD9 = Card.create(body: 'card9')
+CARD10 = Card.create(body: 'card10')
+CARD_NO_ONE_HAS_VOTED_ON = Card.create(body: 'no one has voted on this one')
 
 UPVOTE = 1
 DOWNVOTE = -1
