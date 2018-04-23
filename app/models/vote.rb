@@ -19,6 +19,6 @@ class Vote < ApplicationRecord
   end
 
   def cast
-    self.entropy = Conversation::vote_entropy(user, self) if self.entropy.nil?
+    self.entropy = Conversation.vote_entropy(user, self) if entropy.nil?
   end
 end

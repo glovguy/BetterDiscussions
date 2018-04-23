@@ -51,12 +51,16 @@ module LoadCsv
     puts 'Initializing votes...' if verbose
     progress = ProgressBar.new(rows.length) if verbose
     rows.each do |row|
-      username, post_id, vote_value = row
-      user = User.where(username: username).take
-      card = Card.where(body: post_id).take
-      Vote.create(user: user, card: card, attitude: vote_value)
+      vote_from_row(row)
       progress.increment! if verbose
     end
     puts "Votes loaded. There are #{votes.length} votes." if verbose
+  end
+
+  def self.vote_from_row(row)
+    username, post_id, vote_value = row
+    user = User.where(username: username).take
+    card = Card.where(body: post_id).take
+    Vote.create(user: user, card: card, attitude: vote_value)
   end
 end

@@ -24,6 +24,10 @@ class CardTests < Minitest::Test
 end
 
 class UserTests < Minitest::Test
+  def setup
+    basic_setup
+  end
+
   def test_user_equality
     assert_equal(User.new(username: 'bane'), User.new(username: 'bane'))
   end
@@ -49,29 +53,37 @@ class UserTests < Minitest::Test
 
   def test_user_similarity_equality
     assert_equal(
-      SUE.similarity_with(ROBERT),
-      ROBERT.similarity_with(SUE)
+      @SUE.similarity_with(@ROBERT),
+      @ROBERT.similarity_with(@SUE)
     )
   end
 
   def test_user_similarity_excluding
-    assert(ALICE.similarity_with(BOB) <
-      ALICE.similarity_with(BOB, exclude: [CARD2]))
+    assert(@ALICE.similarity_with(@BOB) <
+      @ALICE.similarity_with(@BOB, exclude: [@CARD2]))
+  end
+
+  def teardown
+    destroy_all
   end
 end
 
 class SimiliarityMetricTests < Minitest::Test
+  def setup
+    basic_setup
+  end
+
   def test_user_distance_equality
     assert_equal(
-      Similarity::USER_DISTANCE.call(SUE, ROBERT),
-      Similarity::USER_DISTANCE.call(ROBERT, SUE)
+      Similarity::USER_DISTANCE.call(@SUE, @ROBERT),
+      Similarity::USER_DISTANCE.call(@ROBERT, @SUE)
     )
   end
 
   def test_user_distance_greater_than
     assert(
-      Similarity::USER_DISTANCE.call(SUE, ROBERT) >
-        Similarity::USER_DISTANCE.call(JAN, ROBERT)
+      Similarity::USER_DISTANCE.call(@SUE, @ROBERT) >
+        Similarity::USER_DISTANCE.call(@JAN, @ROBERT)
     )
   end
 
@@ -86,20 +98,20 @@ class SimiliarityMetricTests < Minitest::Test
   end
 
   def test_distance_with_self
-    assert_equal(Similarity::USER_DISTANCE.call(SUE, SUE), 1.0)
+    assert_equal(Similarity::USER_DISTANCE.call(@SUE, @SUE), 1.0)
   end
 
   def test_distance_totally_unrelated_user
-    assert_equal(Similarity::USER_DISTANCE.call(ALICE, USER_WITH_NO_VOTES), 0.0)
+    assert_equal(Similarity::USER_DISTANCE.call(@ALICE, @USER_WITH_NO_VOTES), 0.0)
   end
 
   def test_user_distance_excluding
-    assert(Similarity::USER_DISTANCE.call(ALICE, BOB) <
-      Similarity::USER_DISTANCE.call(ALICE, BOB, [CARD2]))
+    assert(Similarity::USER_DISTANCE.call(@ALICE, @BOB) <
+      Similarity::USER_DISTANCE.call(@ALICE, @BOB, [@CARD2]))
     dist = Similarity::USER_DISTANCE.call(
-      ALICE,
-      BOB,
-      [CARD1, CARD2, CARD3, CARD4]
+      @ALICE,
+      @BOB,
+      [@CARD1, @CARD2, @CARD3, @CARD4]
     )
     assert_equal(dist, 0.0)
   end
@@ -118,32 +130,40 @@ class SimiliarityMetricTests < Minitest::Test
   end
 
   def test_pearson_score_commutitivity
-    assert_equal(Similarity::USER_DISTANCE.call(PHIL, SUE),
-                 Similarity::USER_DISTANCE.call(PHIL, SUE))
+    assert_equal(Similarity::USER_DISTANCE.call(@PHIL, @SUE),
+                 Similarity::USER_DISTANCE.call(@PHIL, @SUE))
   end
 
   def test_pearson_score_excluding
-    assert(Similarity::PEARSON_SCORE.call(SALLY, JAN) <
-      Similarity::PEARSON_SCORE.call(SALLY, JAN, [CARD2, CARD4]))
+    assert(Similarity::PEARSON_SCORE.call(@SALLY, @JAN) <
+      Similarity::PEARSON_SCORE.call(@SALLY, @JAN, [@CARD2, @CARD4]))
     assert_equal(
-      Similarity::PEARSON_SCORE.call(ALICE, BOB, [CARD1, CARD2, CARD3, CARD4]),
+      Similarity::PEARSON_SCORE.call(@ALICE, @BOB, [@CARD1, @CARD2, @CARD3, @CARD4]),
       0.0
     )
+  end
+
+  def teardown
+    destroy_all
   end
 end
 
 class VoteTests < Minitest::Test
+  def setup
+    basic_setup
+  end
+
   def test_vote_equality
     assert_equal(
-      Vote.new(card: CARD1, attitude: 0),
-      Vote.new(card: CARD1, attitude: 0)
+      Vote.new(card: @CARD1, attitude: 0),
+      Vote.new(card: @CARD1, attitude: 0)
     )
   end
 
   def test_vote_hash_equality
     assert_equal(
-      Vote.new(card: CARD1, attitude: 0).hash,
-      Vote.new(card: CARD1, attitude: 0).hash
+      Vote.new(card: @CARD1, attitude: 0).hash,
+      Vote.new(card: @CARD1, attitude: 0).hash
     )
   end
 
@@ -158,9 +178,17 @@ class VoteTests < Minitest::Test
     test_vote.delete
     test_card.delete
   end
+
+  def teardown
+    destroy_all
+  end
 end
 
 class RecommendationTests < Minitest::Test
+  def setup
+    basic_setup
+  end
+
   def test_recommendation_adding
     rec1 = Recommendation.new(1, 1)
     rec2 = Recommendation.new(0, 1)
@@ -183,7 +211,7 @@ class RecommendationTests < Minitest::Test
   end
 
   def test_recommendations_range
-    recs = Card.all.map { |c| Conversation::recommendation_for(PHIL, c) }
+    recs = Card.all.map { |c| Conversation.recommendation_for(@PHIL, c) }
     recs.reject(&:nil?).each do |rec|
       assert(rec.weighted_prediction >= 0)
       assert(rec.weighted_prediction <= 1)
@@ -191,7 +219,7 @@ class RecommendationTests < Minitest::Test
   end
 
   def test_recommendation_for_totally_unrelated_user
-    assert_nil(ALICE.recommendation_for(USER_WITH_NO_VOTES, CARD1))
+    assert_nil(@ALICE.recommendation_for(@USER_WITH_NO_VOTES, @CARD1))
   end
 
   def test_recommendation_likelihood_of_pos_attitude
@@ -209,36 +237,44 @@ class RecommendationTests < Minitest::Test
     assert_equal(rec1.likelihood_of(neg_att), 1.0)
     assert_equal(rec2.likelihood_of(neg_att), 0.5)
   end
+
+  def teardown
+    destroy_all
+  end
 end
 
 class ConversationTests < Minitest::Test
+  def setup
+    basic_setup
+  end
+
   def test_recommendation_for
-    assert(Conversation::recommendation_for(SUE, CARD5).weighted_prediction < 0.5)
-    assert(Conversation::recommendation_for(SUE, CARD6).weighted_prediction > 0.5)
-    assert(Conversation::recommendation_for(SUE, CARD7).weighted_prediction < 0.5)
-    assert_equal(Conversation::recommendation_for(SUE, CARD8).weighted_prediction, 1)
+    assert(Conversation.recommendation_for(@SUE, @CARD5).weighted_prediction < 0.5)
+    assert(Conversation.recommendation_for(@SUE, @CARD6).weighted_prediction > 0.5)
+    assert(Conversation.recommendation_for(@SUE, @CARD7).weighted_prediction < 0.5)
+    assert_equal(Conversation.recommendation_for(@SUE, @CARD8).weighted_prediction, 1)
   end
 
   def test_card_recommendation_range
-    CARD1.users.each do |u|
-      assert(Conversation::recommendation_for(u, CARD1).weighted_prediction >= 0)
-      assert(Conversation::recommendation_for(u, CARD1).weighted_prediction <= 1)
+    @CARD1.users.each do |u|
+      assert(Conversation.recommendation_for(u, @CARD1).weighted_prediction >= 0)
+      assert(Conversation.recommendation_for(u, @CARD1).weighted_prediction <= 1)
     end
   end
 
   def test_card_without_votes_returns_nil
-    assert_nil(Conversation::recommendation_for(ROBERT, CARD_NO_ONE_HAS_VOTED_ON))
+    assert_nil(Conversation.recommendation_for(@ROBERT, @CARD_NO_ONE_HAS_VOTED_ON))
   end
 
   def test_card_user_has_voted_on_is_given_recommendation
     assert_equal(
       0.4913338099395003,
-      Conversation::recommendation_for(ROBERT, CARD1).weighted_prediction
+      Conversation.recommendation_for(@ROBERT, @CARD1).weighted_prediction
     )
   end
 
   def test_user_with_no_votes_is_given_nil_recommendation
-    assert_nil(Conversation::recommendation_for(USER_WITH_NO_VOTES, CARD1))
+    assert_nil(Conversation.recommendation_for(@USER_WITH_NO_VOTES, @CARD1))
   end
 
   def test_entropy_lambda
@@ -256,45 +292,50 @@ class ConversationTests < Minitest::Test
   def test_conversation_vote_entropy
     assert_equal(
       0.5174903359987708,
-      Conversation::vote_entropy(ROBERT, Vote.new(card: CARD7, attitude: 1))
+      Conversation.vote_entropy(@ROBERT, Vote.new(card: @CARD7, attitude: 1))
     )
     assert_equal(
       0.5,
-      Conversation::vote_entropy(JAN, Vote.new(card: CARD9, attitude: 1))
+      Conversation.vote_entropy(@JAN, Vote.new(card: @CARD9, attitude: 1))
     )
     assert_equal(
       0.5188759492631944,
-      Conversation::vote_entropy(PHIL, Vote.new(card: CARD9, attitude: 1))
+      Conversation.vote_entropy(@PHIL, Vote.new(card: @CARD9, attitude: 1))
     )
     assert_equal(
       0.5122656108674634,
-      Conversation::vote_entropy(SALLY, Vote.new(card: CARD7, attitude: 1))
+      Conversation.vote_entropy(@SALLY, Vote.new(card: @CARD7, attitude: 1))
     )
     assert_equal(
       0.48498113460066844,
-      Conversation::vote_entropy(SALLY, Vote.new(card: CARD7, attitude: 0))
+      Conversation.vote_entropy(@SALLY, Vote.new(card: @CARD7, attitude: 0))
     )
     assert_equal(
       0.5090950592365232,
-      Conversation::vote_entropy(SUE, Vote.new(card: CARD7, attitude: 1))
+      Conversation.vote_entropy(@SUE, Vote.new(card: @CARD7, attitude: 1))
     )
   end
   # rubocop:enable Metrics/AbcSize,Metrics/MethodLength
 
   def test_vote_entropy_is_one_for_user_and_vote_without_recommendation
-    vote_on_card1 = Vote.new(card: CARD1, attitude: 1)
+    vote_on_card1 = Vote.new(card: @CARD1, attitude: 1)
     assert_equal(
-      Conversation::vote_entropy(USER_WITH_NO_VOTES, vote_on_card1),
+      Conversation.vote_entropy(@USER_WITH_NO_VOTES, vote_on_card1),
       1
     )
+  end
+
+  def teardown
+    destroy_all
   end
 end
 
 class LoadCsvTests < Minitest::Test
+  def setup
+    destroy_all
+  end
+
   def test_load_users
-    User.delete_all # Leaky tests!
-    Card.delete_all # Add setup instead?
-    Vote.delete_all
     test_row = [%w[abc123 t9_barfig 1]]
     assert_nil(User.where(username: 'abc123').take)
     LoadCsv.users(test_row)
@@ -312,8 +353,8 @@ class LoadCsvTests < Minitest::Test
 
   def test_load_votes
     test_row = [%w[abc123 t9_barfig 1]]
-    test_user = User.where(username: 'abc123').take
-    test_card = Card.where(body: 't9_barfig').take
+    test_user = User.create(username: 'abc123')
+    test_card = Card.create(body: 't9_barfig')
     assert_nil(Vote.where(user: test_user, card: test_card).take)
     LoadCsv.votes(test_row)
     new_vote = Vote.where(user: test_user, card: test_card).take
