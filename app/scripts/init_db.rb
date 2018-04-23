@@ -16,6 +16,7 @@ ActiveRecord::Schema.define do
   create_table :votes, force: true do |t|
     t.references :card
     t.references :user
-    t.decimal :attitude
+    t.float :attitude
+    t.float :entropy
   end
 end

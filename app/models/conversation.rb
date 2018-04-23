@@ -11,9 +11,6 @@ end
 
 # it understands a group of cards that are compared to each other
 module Conversation
-
-  PRIOR = Recommendation.new(0, 1)
-
   def self.recommendation_for(user, card)
     other_users = card.users - [user]
     other_users.inject(nil) do |sum, u|
