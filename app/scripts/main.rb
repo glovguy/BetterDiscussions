@@ -1,36 +1,34 @@
-# require 'csv'
-# require_relative '../app/cards.rb'
-# require_relative '../app/conversations.rb'
-require_relative '../app/similarity.rb'
+require_relative '../scripts/init_db.rb'
 require_relative './load_csv.rb'
-require 'progress_bar'
+require_relative './analysis.rb'
 
-filepath = 'publicvotes.csv'
+filepath = 'app/scripts/publicvotes.csv'
 
 rows = LoadCsv.csv_rows(filepath, true)
-all_cards = LoadCsv.cards_with_more_than_one_vote(rows)
-all_users = LoadCsv.users_who_voted_on_cards(rows, all_cards)
-convo = Conversation.new(all_users, all_cards)
+# rows = [
+#   %w[abc123 t9_barfig 1],
+#   %w[abc123 t9_barfpu 1],
+#   %w[abc123 t9_binsop 1],
+#   %w[blogmonster t9_barfig 1],
+#   %w[blogmonster t9_binsop 1],
+#   ['blogmonster', 't9_barfpu', '0'],
+#   %w[blogmonster t9_baondig 1],
+#   %w[wrongwarp t9_biiviig 1]
+# ].freeze
 
-bar4 = ProgressBar.new(convo.cards.length)
-entropies = {}
-[convo].each do |con|
-  c = con.cards.first
-  ent = con.card_entropy(c)
-  entropies[c.body] = ent unless ent.nil?
-  bar4.increment!
-end
+LoadCsv.users(rows, true)
+LoadCsv.cards(rows, true)
+LoadCsv.votes(rows, true)
 
-non_nil_entropies = entropies.sort_by { |e| e[1] }
+first_order = Analysis.ordered_cards.map(&:body)
+p first_order.first(5)
 
-puts '  Entropies:'
-puts 'lowest (good):'
-non_nil_entropies.take(5).each { |e| puts e }
-puts 'highest (bad):'
-non_nil_entropies.reverse.take(5).each { |e| puts e }
-puts " Number of non-nil entropies: #{non_nil_entropies.length}"
-puts ' All entropies were nil' if non_nil_entropies.empty?
+all_votes = Vote.all
 
-CSV.open('entropies.csv', 'w') do |csv|
-  non_nil_entropies.each { |s| csv << s }
-end
+all_votes.each {|v| v.attitude == nil}
+all_votes.shuffle.each(&:cast)
+
+second_order = Analysis.ordered_cards.map(&:body)
+p second_order.first(5)
+
+p first_order == second_order

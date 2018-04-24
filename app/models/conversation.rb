@@ -2,6 +2,7 @@ require 'statistics2'
 require_relative './recommendation.rb'
 
 ENTROPY = lambda do |prob|
+  return 1.0 if prob == 0.0 # Yeah I know
   return (-prob * (Math.log(prob) / Math.log(2))).abs
 end
 

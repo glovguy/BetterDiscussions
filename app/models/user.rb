@@ -1,4 +1,5 @@
 require_relative '../application_record.rb'
+require_relative '../similarity.rb'
 # it understands someone who interacts with content
 class User < ApplicationRecord
   belongs_to :conversation

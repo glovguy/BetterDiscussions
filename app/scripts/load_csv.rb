@@ -27,9 +27,9 @@ module LoadCsv
 
   def self.users(rows, verbose = false)
     puts 'Initializing users...' if verbose
-    usernames = rows.map(&:first)
+    usernames = rows.map(&:first).uniq
     progress = ProgressBar.new(usernames.length) if verbose
-    usernames.uniq.map do |un|
+    usernames.map do |un|
       User.create(username: un)
       progress.increment! if verbose
     end
@@ -54,8 +54,10 @@ module LoadCsv
       vote_from_row(row)
       progress.increment! if verbose
     end
-    puts "Votes loaded. There are #{votes.length} votes." if verbose
+    puts "Votes loaded. There are #{Vote.count} votes." if verbose
   end
+
+  private
 
   def self.vote_from_row(row)
     username, post_id, vote_value = row
