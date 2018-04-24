@@ -11,6 +11,7 @@ require_relative '../app/models/recommendation.rb'
 require_relative '../app/models/user.rb'
 require_relative '../app/models/conversation.rb'
 require_relative '../app/scripts/load_csv.rb'
+require_relative '../app/scripts/analysis.rb'
 
 class CardTests < Minitest::Test
   def test_card_equality
@@ -375,6 +376,19 @@ class LoadCsvTests < Minitest::Test
     @@mock_csv_file = []
     LoadCsv.write_to_file(%w[eins zwei drei], 'delete_please.csv')
     assert_equal(@@mock_csv_file, %w[eins zwei drei])
+  end
+end
+
+class AnalysisTests < Minitest::Test
+  def setup
+    basic_setup
+  end
+  def test_ordered_cards
+    expected_order = ["card10", "card6", "card7", "card8", "card9", "card5", "card1", "card2", "card3", "card4"]
+    assert_equal(expected_order, Analysis.ordered_cards.map(&:body))
+  end
+  def teardown
+    destroy_all
   end
 end
 
