@@ -21,6 +21,13 @@ class CardTests < Minitest::Test
   def test_card_hash_equality
     assert_equal(Card.new(body: 'body').hash, Card.new(body: 'body').hash)
   end
+
+  def test_score
+    test_card = Card.create(body: 'body')
+    Vote.create(card: test_card, entropy: 0.81.to_f)
+    Vote.create(card: test_card, entropy: 0.11.to_f)
+    assert_equal(0.92, test_card.score)
+  end
 end
 
 class UserTests < Minitest::Test

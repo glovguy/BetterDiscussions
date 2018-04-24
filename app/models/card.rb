@@ -16,4 +16,8 @@ class Card < ApplicationRecord
   def to_s
     'CARD_' + body
   end
+
+  def score
+    votes.map(&:entropy).reduce(:+)
+  end
 end
